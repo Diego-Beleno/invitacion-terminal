@@ -17,7 +17,7 @@
         .prompt-user { color: var(--white); background: rgba(0, 255, 65, 0.2); padding: 5px; font-weight: bold; border-left: 3px solid var(--white); }
         .prompt-console { color: var(--neon); border-left: 4px solid var(--neon); padding-left: 6px; margin: 8px 0; background: rgba(0, 40, 0, 0.3);}
         .red { color: var(--red); font-weight: bold; text-shadow: 0 0 10px var(--red); }
-        .centered-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
+        .centered-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 5px 0; }
         
         .notice-box {
             border: 1px double var(--neon);
@@ -30,8 +30,8 @@
 
         #scanner-container {
             position: relative; border: 4px solid #005500; opacity: 0.1; pointer-events: none;
-            background: rgba(0, 60, 0, 0.2); width: 130px; height: 160px; display: flex; align-items: center; justify-content: center;
-            margin-top: 15px; box-shadow: 0 0 20px rgba(0,255,65,0.1);
+            background: rgba(0, 60, 0, 0.2); width: 130px; height: 140px; display: flex; align-items: center; justify-content: center;
+            margin-top: 10px; box-shadow: 0 0 20px rgba(0,255,65,0.1);
         }
         #scanner-dots { font-size: 22px; line-height: 0.7; letter-spacing: 6px; color: #00ff41; user-select: none; opacity: 0.5; }
         #laser { position: absolute; width: 100%; height: 4px; background: #fff; box-shadow: 0 0 25px var(--neon), 0 0 10px #fff; top: 0; left: 0; display: none; z-index: 20; }
@@ -45,18 +45,18 @@
         button:hover:not(:disabled) { background: var(--neon); color: #000; box-shadow: none; transform: translate(3px, 3px); }
         button:disabled { border-color: #003300; color: #003300; opacity: 0.4; box-shadow: none; }
         
-        #prog-bar { color: var(--white); font-size: 12px; margin-bottom: 8px; font-weight: bold; text-shadow: 0 0 5px var(--neon); }
+        #prog-bar { color: var(--white); font-size: 12px; margin-bottom: 5px; font-weight: bold; text-shadow: 0 0 5px var(--neon); }
         
         #telemetry-box { 
-            font-size: 9px; color: #00ff41; height: 70px; overflow: hidden; width: 100%; 
-            border-top: 1px solid #00ff41; margin-top: 10px; background: rgba(0,10,0,0.9); 
+            font-size: 9px; color: #00ff41; height: 60px; overflow: hidden; width: 100%; 
+            border-top: 1px solid #00ff41; margin-top: 5px; background: rgba(0,10,0,0.9); 
             padding: 5px; font-family: 'Courier New';
         }
 
         #countdown { font-size: 1.5em; color: #fff; border: 2px solid var(--red); padding: 15px; margin: 15px 0; background: rgba(40,0,0,0.5); text-align: center; font-weight: bold; letter-spacing: 2px; }
         
         .footer-info { 
-            font-size: 11px; color: var(--neon); margin-top: 15px; font-weight: bold; 
+            font-size: 11px; color: var(--neon); margin-top: 10px; font-weight: bold; 
             text-align: center; border-top: 1px dashed #004400; width: 100%; padding-top: 10px;
         }
 
@@ -83,7 +83,7 @@
 
         <div id="boot-screen" class="hidden">
             <div id="boot-header" style="color: #fff; font-size: 11px; border-bottom: 1px solid #00ff41; padding-bottom: 5px; margin-bottom: 10px;"></div>
-            <div id="boot-logs" style="height: 200px; overflow: hidden; padding: 5px;"></div>
+            <div id="boot-logs" style="height: 180px; overflow: hidden; padding: 5px;"></div>
             <div class="centered-ui">
                 <div class="notice-box" style="font-size: 10px; border-color: #fff;">
                     INSTRUCCIÓN: ESCUCHE EL MENSAJE Y PRESIONE EL BOTÓN INFERIOR PARA INICIAR EL ESCANEO.
@@ -94,7 +94,7 @@
         </div>
 
         <div id="scan-screen" class="hidden">
-            <div id="scan-logs" style="height: 140px; overflow: hidden; font-size: 11px; border-bottom: 1px solid #005500;"></div>
+            <div id="scan-logs" style="height: 180px; overflow-y: auto; font-size: 11px; border-bottom: 1px solid #005500;"></div>
             <div class="centered-ui">
                 <div id="prog-bar">STATUS: ESPERANDO HUELLA...</div>
                 <div id="scanner-container">
@@ -125,9 +125,9 @@
         let activeSteps = [];
         const originalSteps = [
             {p: 0, v: "ESCANEANDO HUELLA DIGITAL..."},
-            {p: 25, v: "MIDIENDO PULSO CARDIACO..."},
-            {p: 45, v: "ENVIANDO INFROMACIÓN A LA BASE DE DATOS..."},
-            {p: 65, v: "GUARDANDO DATOS DE USUARIO..."},
+            {p: 15, v: "MIDIENDO PULSO CARDIACO..."},
+            {p: 25, v: "ENVIANDO INFROMACIÓN A LA BASE DE DATOS..."},
+            {p: 35, v: "GUARDANDO DATOS DE USUARIO..."},
             {p: 85, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."},
             {p: 98, v: "ACCESO CONCEDIDO CON ÉXITO."}
         ];
@@ -164,7 +164,9 @@
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             const el = document.createElement("div");
             el.className = "line " + (prompt === 'user' ? 'prompt-user' : 'prompt-console');
-            document.getElementById(targetId).appendChild(el);
+            const target = document.getElementById(targetId);
+            target.appendChild(el);
+            target.scrollTop = target.scrollHeight;
             
             let i = 0;
             const typeInterval = setInterval(() => {
@@ -202,7 +204,7 @@
             document.getElementById("boot-screen").classList.remove("hidden");
             await typeSimple("TERMINAL SECURE ACCESS - PROTOCOLO V.26", "boot-header");
             
-            const msg = "SISTEMA DE SEGURIDAD INICIADO CON ÉXITO. RECUERDE MANTENER EL VOLUMEN AL MÁXIMO. NECESITAMOS SUS DATOS BIOMÉTRICOS PARA LA CREACIÓN DE SUS DATOS DE USUARIO EN LA BASE DE DATOS. SE LE REALIZARÁ UN ESCÁNER DIGITAL. PRESIONE EL BOTÓN PARA CONTINUAR.";
+            const msg = "SISTEMA DE SEGURIDAD INICIADO CON ÉXITO. RECUERDE MANTENER EL VOLUMEN AL MÁXIMO. NECESITAMOS SUS DATOS BIOMÉTRICOS PARA LA CREACIÓN DE SU PERFIL DE USUARIO EN LA BASE DE DATOS. SE LE REALIZARÁ UN ESCÁNER DIGITAL. PRESIONE EL BOTÓN INICIAR BIOMETRIC ESCAN PUNTO EXE PARA CONTINUAR.";
             speakAndType(msg, "boot-logs", 'user', () => { 
                 document.getElementById("btn-start-scan").disabled = false;
                 playUnlock();
@@ -216,8 +218,10 @@
             
             const msg = "COLOQUE SU HUELLA FIRMEMENTE SOBRE EL LECTOR. MANTENGA LA PRESIÓN HASTA QUE LA BARRA LLEGUE AL CIEN POR CIENTO. POR FAVOR NO RETIRE EL DEDO HASTA COMPLETAR EL PROCESO.";
             speakAndType(msg, "scan-logs", 'console', () => {
+                playUnlock(); // Sonido de que el lector está disponible
                 document.getElementById("scanner-container").style.opacity = "1";
                 document.getElementById("scanner-container").style.pointerEvents = "auto";
+                document.getElementById("prog-bar").innerText = "STATUS: LECTOR LISTO - ESPERANDO CONTACTO";
             });
         }
 
@@ -230,14 +234,15 @@
             const gain = audioCtx.createGain();
             const modGain = audioCtx.createGain();
 
-            scanOsc.type = 'square';
-            scanOsc.frequency.value = 80;
-            scanMod.frequency.value = 10;
-            modGain.gain.value = 20;
+            // Sonido de escáner más industrial (Sierra + Cuadrada)
+            scanOsc.type = 'sawtooth';
+            scanOsc.frequency.value = 60; 
+            scanMod.frequency.value = 15; // Modulación más rápida
+            modGain.gain.value = 30;
 
             scanMod.connect(modGain);
             modGain.connect(scanOsc.frequency);
-            gain.gain.value = 0.05;
+            gain.gain.value = 0.07;
             scanOsc.connect(gain);
             gain.connect(audioCtx.destination);
 
@@ -254,8 +259,9 @@
                 
                 if(cur >= 100) { 
                     stopScanAudio();
+                    playUnlock(); // Sonido de éxito de hardware
                     document.getElementById("laser").style.display = "none";
-                    speakAndType("PROCESO COMPLETADO. BIENVENIDO " + rawNombre, "scan-logs", 'console', () => {
+                    speakAndType("PROCESO COMPLETADO. IDENTIDAD CONFIRMADA. BIENVENIDO " + rawNombre, "scan-logs", 'console', () => {
                         showResult();
                     });
                     clearInterval(timer);
@@ -269,7 +275,8 @@
                 if(cur % 3 === 0) {
                     const hex = Array.from({length:6}, () => Math.floor(Math.random()*256).toString(16).toUpperCase().padStart(2,'0')).join(':');
                     const telemetry = [`PACKET_LOST: 0%`, `CORE_TEMP: 88°C`, `MAC_ADDR: ${hex}`, `SIGNAL_STRENGTH: -${(Math.random()*100).toFixed(0)}dBm`];
-                    document.getElementById("telemetry-box").innerHTML = `<div>> ${telemetry[Math.floor(Math.random()*telemetry.length)]}</div>` + document.getElementById("telemetry-box").innerHTML;
+                    const tBox = document.getElementById("telemetry-box");
+                    tBox.innerHTML = `<div>> ${telemetry[Math.floor(Math.random()*telemetry.length)]}</div>` + tBox.innerHTML;
                 }
             }, 100);
         }
