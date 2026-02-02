@@ -186,7 +186,7 @@
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
             
-            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE EL LECTOR DE HUELLAS PARA RECOLECTAR SUS DATOS. POR FAVOR NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA. OBEDEZCA LAS INSTRUCCIONES.";
+            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. INSTRUCCIONES: COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE EL LECTOR DE HUELLAS PARA RECOLECTAR SUS DATOS. POR FAVOR NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA. OBEDEZCA LAS INSTRUCCIONES.";
             speakAndType(msg, "scan-logs", 'console', () => {
                 playAggressiveSound(1000, 0.2, 'square');
                 document.getElementById("scanner-container").style.opacity = "1";
@@ -260,7 +260,7 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 DE LA TARDE. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR SU ESTILO. TIPS: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA AHORA PRESIONANDO EL BOTÓN.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 DE LA TARDE EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR SU ESTILO. TIPS: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA AHORA PRESIONANDO EL BOTÓN.";
             
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
@@ -291,7 +291,7 @@
         function startVirusBroma() {
             playAggressiveSound(40, 0.8, 'sawtooth', 0.3);
             document.body.classList.add("glitch-active");
-            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS. CONFIRMA TU ASISTENCIA POR WHATSAPP AHORA.";
+            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS. PARA DESINFECTARTE DEBES SEGUIR LAS INSTRUCCIONES EL DÍA DE LA REUNIÓN, CONFIRMA TU ASISTENCIA POR WHATSAPP AHORA.";
             speakAndType(msg, "virus-logs", 'console', () => {
                 window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("SYSTEM_CRITICAL: " + rawNombre + " HA SIDO INFECTADO.");
             });
@@ -356,4 +356,5 @@
     </script>
 </body>
 </html>
+
 
