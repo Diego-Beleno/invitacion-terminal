@@ -215,7 +215,7 @@
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
             
-            const msg = "PROCEDIMIENTO DE CAPTURA. COLOQUE SU DEDO PULGAR FIRMEMENTE. NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA VASCULAR.";
+            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE EL LECTOR DE HUELLAS. POR FAVOR NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SUS DATOS.";
             speakAndType(msg, "scan-logs", 'console', () => {
                 document.getElementById("scanner-container").style.opacity = "1";
                 document.getElementById("scanner-container").style.pointerEvents = "auto";
@@ -235,9 +235,10 @@
             document.getElementById("laser").style.animation = "scanMotion 1.5s infinite alternate linear";
             
             const steps = [
-                {p: 20, v: "EXTRAYENDO ADN..."},
-                {p: 50, v: "MIRANDO TUS FOTOS DE LA GALERÍA..."},
-                {p: 80, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."}
+                {P: 0,  v: "ESCANEANDO HUELLA DIGITAL..."
+                {p: 15, v: "OBTENIENDO DATOS BIOMÉTRICOS"},
+                {p: 30, v: "CREANDO DATOS DE USUARIO"},
+                {p: 50, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."}
             ];
 
             timer = setInterval(() => {
@@ -251,10 +252,26 @@
                     speakAndType(steps.shift().v, "scan-logs", 'console');
                 }
 
-                if(cur % 5 === 0) {
-                    const stats = ["PULSE: " + (72+Math.random()*15).toFixed(0) + "BPM", "SPO2: 99%", "DNA: VALID"];
-                    document.getElementById("telemetry-box").innerHTML = stats[Math.floor(Math.random()*stats.length)] + "<br>" + document.getElementById("telemetry-box").innerHTML;
-                }
+              if(cur % 4 === 0) {
+    const stats = [
+        "PULSE: " + (72 + Math.random() * 15).toFixed(0) + " BPM",
+        "SPO2: " + (97 + Math.random() * 3).toFixed(0) + "%",
+        "DERMAL_TEMP: " + (35.8 + Math.random() * 1.2).toFixed(1) + "°C",
+        "PATTERN: " + ["ARCH", "LOOP", "WHORL", "ACCIDENTAL"][Math.floor(Math.random() * 4)],
+        "RIDGE_DENSITY: " + (12 + Math.random() * 5).toFixed(1) + " lines/mm",
+        "MINUTIAE_POINTS: " + (40 + Math.random() * 20).toFixed(0) + " DETECTED",
+        "MOISTURE_LEVEL: " + (20 + Math.random() * 10).toFixed(1) + "%",
+        "MATCH_CONFIDENCE: " + (85 + Math.random() * 14).toFixed(2) + "%",
+        "VASCULAR_MAP: VERIFIED",
+        "EPIDERMAL_THICKNESS: " + (0.4 + Math.random() * 0.2).toFixed(2) + "mm"
+    ];
+    
+    // Elegimos un dato al azar para imprimir en cada ciclo
+    const randomStat = stats[Math.floor(Math.random() * stats.length)];
+    document.getElementById("telemetry-box").innerHTML = 
+        `<div class="line">[SCAN_DATA] ${randomStat}</div>` + 
+        document.getElementById("telemetry-box").innerHTML;
+}
 
                 if(count >= 100) {
                     clearInterval(timer); scanOsc.stop();
@@ -269,7 +286,7 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO A MI CUMPLEAÑOS ESTE 7 DE FEBRERO A LAS 18 HORAS EN MI CASA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR MI ESTILO. USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS SOBRE OTRAS DE MANGA LARGA. CONFIRMA AHORA.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO A MI CUMPLEAÑOS ESTE 7 DE FEBRERO A LAS 6 DE LA TARDE EN MI CASA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR EL ESTILO DE DIEGO. CONSEJOS: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISAS SOBRE OTRAS DE MANGA LARGA ETC ETC ETC, NO FALLES. CONFIRMA AHORA PRESIONANDO EL BOTÓN CONFIRMAR ASISTENCIA PUNTO EXE.";
             
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
@@ -277,7 +294,7 @@
 
             document.getElementById("final-text-area").innerHTML += `
                 <div class="line" style="color:#fff; border:1px solid #00ff41; padding:6px; margin-top:10px; background: rgba(0,30,0,0.5);">
-                [ESTILO_DIEGO_V1.0]:<br>
+                [DRESS CODE]:<br>
                 - PANTALONES BAGGY / ANCHOS<br>
                 - ZAPATOS BLANCOS<br>
                 - GORRA (OBLIGATORIO)<br>
@@ -297,7 +314,7 @@
         function startVirusBroma() {
             playAggressiveSound(40, 0.8, 'sawtooth', 0.3);
             document.body.classList.add("glitch-active");
-            const msg = "VIRUS DESCARGADO. DATOS COMPROMETIDOS. PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN. CONFÍRMAME POR WHATSAPP AHORA.";
+            const msg = "VIRUS DESCARGADO. DATOS COMPROMETIDOS. PARA BORRAR EL VIRUS DEBES SEGUIR LAS INSTRUCCIONES EL DÍA DE LA REUNIÓN. CONFÍRMAME POR WHATSAPP AHORA.";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
                     window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("SYSTEM_CRITICAL: " + rawNombre + " HA SIDO INFECTADO.");
@@ -325,3 +342,4 @@
     </script>
 </body>
 </html>
+
