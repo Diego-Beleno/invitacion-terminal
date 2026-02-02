@@ -382,7 +382,7 @@
             playClick();
             document.body.classList.add("glitch-active");
             playAggressiveSound(40, 3.0, 'sawtooth', 0.6);
-            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN...";
+            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR SU DISPOSITIVO, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN, ESPERE...";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
                     window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA: " + rawNombre);
@@ -404,4 +404,5 @@
     </script>
 </body>
 </html>
+
 
