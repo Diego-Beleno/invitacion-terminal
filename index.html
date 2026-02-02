@@ -19,9 +19,11 @@
         .red { color: #ff0000; font-weight: bold; text-shadow: 0 0 15px #ff0000; }
         .centered-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
         
+        /* Ajuste de posición del escáner */
         #scanner-container {
             position: relative; border: 3px solid #003300; opacity: 0.1; pointer-events: none;
             background: rgba(0, 40, 0, 0.4); width: 110px; height: 140px; display: flex; align-items: center; justify-content: center;
+            margin-top: 20px;
         }
         #scanner-dots { font-size: 18px; line-height: 0.6; letter-spacing: 5px; color: #008800; user-select: none; }
         #laser { position: absolute; width: 100%; height: 3px; background: #fff; box-shadow: 0 0 20px var(--neon); top: 0; left: 0; display: none; z-index: 20; }
@@ -36,9 +38,16 @@
         button:disabled { border-color: #002200; color: #002200; opacity: 0.3; }
         
         #prog-bar { color: var(--white); font-size: 11px; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px;}
-        #telemetry-box { font-size: 9px; color: #00aa00; height: 65px; overflow: hidden; width: 100%; border-top: 1px solid #003300; margin-top: 8px; background: rgba(0,5,0,0.8); }
+        
+        /* Telemetría más visible */
+        #telemetry-box { 
+            font-size: 10px; color: #00ff41; height: 80px; overflow: hidden; width: 100%; 
+            border-top: 1px solid #00ff41; margin-top: 15px; background: rgba(0,20,0,0.9); 
+            padding: 5px; font-weight: bold;
+        }
         #countdown { font-size: 1.3em; color: var(--white); border: 1px double var(--neon); padding: 10px; margin: 10px 0; background: rgba(0,30,0,0.9); text-align: center; font-weight: bold; }
         
+        .footer-info { font-size: 9px; color: #004400; margin-top: 5px; }
         .hidden { display: none; }
         @keyframes scanMotion { 0% { top: 0%; } 100% { top: 100%; } }
         .glitch-active { animation: glitch 0.08s infinite; background: #500 !important; }
@@ -53,7 +62,7 @@
             <div class="centered-ui">
                 <div class="line red" style="font-size: 15px;">[!] ATENCIÓN: PROTOCOLO DE INSTRUCCIONES VÍA AUDIO [!]</div>
                 <div class="line" style="color:#fff; border: 1px solid #fff; padding: 8px; margin: 10px 0;">SUBA EL VOLUMEN AL 100% PARA RECIBIR LAS INSTRUCCIONES</div>
-                <button id="btn-init" class="hidden" onclick="initApp()">> EJECUTAR_ACCESO_SISTEMA.EXE</button>
+                <button id="btn-init" class="hidden" onclick="playClick(); initApp()">> EJECUTAR_ACCESO_SISTEMA.EXE</button>
             </div>
         </div>
 
@@ -61,12 +70,13 @@
             <div id="boot-header" style="color: #fff; font-size: 11px; border-bottom: 1px solid #004400; padding-bottom: 5px;"></div>
             <div id="boot-logs" style="height: 230px; overflow: hidden; padding: 5px;"></div>
             <div class="centered-ui">
-                <button id="btn-start-scan" disabled onclick="startScanningSequence()">> INICIALIZAR_BIOMETRIC_SCAN.EXE</button>
+                <button id="btn-start-scan" disabled onclick="playClick(); startScanningSequence()">> INICIALIZAR_BIOMETRIC_SCAN.EXE</button>
+                <div class="footer-info">PROGRAMADO POR DIEGO BELEÑO - TODOS LOS DERECHOS RESERVADOS © 2026</div>
             </div>
         </div>
 
         <div id="scan-screen" class="hidden">
-            <div id="scan-logs" style="height: 140px; overflow: hidden; font-size: 11px; border-bottom: 1px solid #003300;"></div>
+            <div id="scan-logs" style="height: 120px; overflow: hidden; font-size: 11px; border-bottom: 1px solid #003300;"></div>
             <div class="centered-ui">
                 <div id="prog-bar">ESPERANDO CONTACTO... [░░░░░░░░░░] 0%</div>
                 <div id="scanner-container">
@@ -82,7 +92,7 @@
             <div id="final-text-area" style="font-size: 11px; margin-top: 10px;"></div>
             <div id="countdown"></div>
             <div class="line red" style="text-align: center; margin-bottom: 5px; font-size: 10px;">CONFIRMA ASISTENCIA PRESIONANDO:</div>
-            <button id="btn-conf" disabled onclick="startVirusBroma()">> CONFIRMAR_ASISTENCIA.EXE</button>
+            <button id="btn-conf" disabled onclick="playClick(); startVirusBroma()">> CONFIRMAR_ASISTENCIA.EXE</button>
             <div id="virus-logs" class="red" style="margin-top:10px; font-size: 9px;"></div>
         </div>
     </div>
@@ -95,10 +105,10 @@
         let activeSteps = [];
         const originalSteps = [
             {p: 0, v: "ESCANEANDO HUELLA DACTILAR..."},
-            {p: 25, v: "EXTRAYENDO DATOS DEL SUJETO..."},
-            {p: 50, v: "ASIGNANDO BLOQUE DE INFORMACIÓN..."},
-            {p: 75, v: "ELIMINANDO TIKTOK DEL DISPOSITIVO..."},
-            {p: 90, v: "FINALIZANDO CARGA. NO RETIRE LA HUELLA..."}
+            {p: 20, v: "EXTRAYENDO MINUCIAS Y PUNTOS DE CONTROL..."},
+            {p: 45, v: "MAPEO DE TEXTURA DÉRMICA COMPLETADO..."},
+            {p: 70, v: "VERIFICANDO INTEGRIDAD DE DATOS BIOMÉTRICOS..."},
+            {p: 95, v: "SINCRONIZANDO CON BASE DE DATOS CENTRAL..."}
         ];
 
         function playAggressiveSound(freq, duration, type='sawtooth', vol=0.08) {
@@ -112,6 +122,9 @@
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
+
+        function playClick() { playAggressiveSound(800, 0.1, 'square', 0.1); }
+        function playUnlock() { playAggressiveSound(1200, 0.2, 'sine', 0.1); setTimeout(()=>playAggressiveSound(1600, 0.2, 'sine', 0.1), 100); }
 
         function speakAndType(text, targetId, prompt, callback) {
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
@@ -147,6 +160,7 @@
                 await new Promise(r => setTimeout(r, 45));
             }
             document.getElementById("btn-init").classList.remove("hidden");
+            playUnlock();
         };
 
         async function initApp() {
@@ -155,9 +169,10 @@
             document.getElementById("boot-screen").classList.remove("hidden");
             await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045]", "boot-header");
             
-            const msg = "SISTEMA DE SEGURIDAD LISTO. NECESITAMOS SUS DATOS BIOMÉTRICOS. SE LE REALIZARÁ UN ESCÁNER DIGITAL PARA VERIFICAR SU IDENTIDAD. PARA CONTINUAR PRESIONE EL BOTÓN INICIALIZAR BIOMETRIC SCAN PUNTO EXE.";
+            const msg = "SISTEMA DE SEGURIDAD LISTO. RECUERDE MANTENER EL VOLUMEN AL MÁXIMO. NECESITAMOS SUS DATOS BIOMÉTRICOS. SE LE REALIZARÁ UN ESCÁNER DIGITAL. PRESIONE EL BOTÓN PARA CONTINUAR.";
             speakAndType(msg, "boot-logs", 'user', () => { 
-                document.getElementById("btn-start-scan").disabled = false; 
+                document.getElementById("btn-start-scan").disabled = false;
+                playUnlock();
             });
         }
 
@@ -166,7 +181,7 @@
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
             
-            const msg = "INICIALIZANDO SISTEMA DE ESCANEO. INSTRUCCIONES: COLOQUE SU HUELLA FIRMEMENTE SOBRE EL LECTOR PARA QUE EL SISTEMA RECOLECTE SUS DATOS. NO QUITE LA HUELLA BAJO NINGUNA CIRCUNSTANCIA O EL PROTOCOLO SE REINICIARÁ.";
+            const msg = "COLOQUE SU HUELLA FIRMEMENTE. MANTENGA LA PRESIÓN HASTA QUE LA BARRA LLEGUE AL CIEN POR CIENTO. NO RETIRE EL DEDO.";
             speakAndType(msg, "scan-logs", 'console', () => {
                 document.getElementById("scanner-container").style.opacity = "1";
                 document.getElementById("scanner-container").style.pointerEvents = "auto";
@@ -185,22 +200,35 @@
             document.getElementById("laser").style.animation = "scanMotion 1.5s infinite alternate linear";
             
             timer = setInterval(() => {
-                count += 0.55;
-                const cur = Math.floor(count);
+                count += 0.65;
+                const cur = Math.min(Math.floor(count), 100);
+                
+                document.getElementById("prog-bar").innerText = `CAPTURANDO... [${"█".repeat(Math.floor(cur/10))}${"░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
+                
                 if(cur >= 100) { 
-                    clearInterval(timer); scanOsc.stop(); 
-                    speakAndType("YA PUEDES RETIRAR LA HUELLA. ACCESO CONCEDIDO. BIENVENIDO " + rawNombre, "scan-logs", 'console', () => {
+                    clearInterval(timer); scanOsc.stop();
+                    document.getElementById("laser").style.display = "none";
+                    document.getElementById("laser").style.animation = "none";
+                    speakAndType("PROCESO COMPLETADO. BIENVENIDO " + rawNombre, "scan-logs", 'console', () => {
                         showResult();
                     });
                     return; 
                 }
-                document.getElementById("prog-bar").innerText = `CAPTURANDO... [${"█".repeat(Math.floor(cur/10))}${ "░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
+                
                 if(activeSteps.length > 0 && cur >= activeSteps[0].p) {
                     speakAndType(activeSteps.shift().v, "scan-logs", 'console');
                 }
-                if(cur % 4 === 0) {
-                    const stats = ["MATCH: " + (85 + Math.random() * 14).toFixed(2) + "%", "DNA: VERIFIED"];
-                    document.getElementById("telemetry-box").innerHTML = `<div class="line">[SCAN_DATA] ${stats[Math.floor(Math.random()*stats.length)]}</div>` + document.getElementById("telemetry-box").innerHTML;
+
+                // Telemetría tipo "Real Raw Data"
+                if(cur % 2 === 0) {
+                    const hex = Array.from({length:4}, () => Math.floor(Math.random()*256).toString(16).toUpperCase().padStart(2,'0')).join(' ');
+                    const rawLines = [
+                        `RAW_DATA: 0x${hex}`,
+                        `BIT_MAP_P_VAL: ${(Math.random()*1).toFixed(4)}`,
+                        `VECTOR_ID: {${(Math.random()*999).toFixed(0)}}`,
+                        `DPI_SENSE: 1200`
+                    ];
+                    document.getElementById("telemetry-box").innerHTML = `<div>> ${rawLines[Math.floor(Math.random()*rawLines.length)]}</div>` + document.getElementById("telemetry-box").innerHTML;
                 }
             }, 80);
         }
@@ -213,7 +241,7 @@
                 playAggressiveSound(50, 0.4, 'sawtooth', 0.2); 
                 document.getElementById("console").style.borderColor = "#ff0000";
                 setTimeout(() => document.getElementById("console").style.borderColor = "#004400", 500);
-                speakAndType("ERROR: CONTACTO INTERRUMPIDO. REINICIANDO PROTOCOLO...", "scan-logs", 'console');
+                speakAndType("ERROR: CONTACTO PERDIDO. REINICIANDO...", "scan-logs", 'console');
                 count = 0; 
                 activeSteps = [...originalSteps];
                 document.getElementById("prog-bar").innerText = `ESPERANDO CONTACTO... [░░░░░░░░░░] 0%`;
@@ -226,9 +254,10 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 DE LA TARDE EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR SU ESTILO. USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA PRESIONANDO EL BOTÓN CONFIRMAR ASISTENCIA PUNTO EXE.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA TU ASISTENCIA AHORA.";
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
+                playUnlock();
             });
             setInterval(updateClock, 1000);
         }
@@ -242,11 +271,11 @@
         function startVirusBroma() {
             document.body.classList.add("glitch-active");
             playAggressiveSound(40, 1.0, 'sawtooth', 0.3);
-            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS. PARA DESINFECTAR TU DISPOSITIVO DEBES SEGUIR LAS INSTRUCCIONES EL DÍA DE LA REUNIÓN. AHORA, CONFIRMA TU ASISTENCIA VÍA WHATSAPP.";
+            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN...";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
                     window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA POR: " + rawNombre + ". DISPOSITIVO INFECTADO.");
-                }, 1500);
+                }, 2000);
             });
             setInterval(() => {
                 const el = document.createElement("div"); el.innerText = "FATAL_ERROR_0x" + Math.random().toString(16).slice(2,6).toUpperCase();
