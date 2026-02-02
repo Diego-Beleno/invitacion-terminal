@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TERMINAL_RESIDENCE_FINAL_BUILD</title>
+    <style>
+        :root { --neon: #00ff41; --bg: #000a00; --white: #e0e0e0; }
+        body { 
+            background: var(--bg); color: var(--neon); 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            padding: 10px; margin: 0; height: 100vh; overflow: hidden;
+            font-size: 11px; line-height: 1.1;
+        }
+        #console { border: 1px solid #004400; padding: 10px; height: 94vh; display: flex; flex-direction: column; position: relative; box-shadow: inset 0 0 50px #000; overflow: hidden;}
+        .line { margin-bottom: 2px; white-space: pre-wrap; text-transform: uppercase; }
+        .prompt-user { color: var(--white); background: rgba(0, 255, 65, 0.15); padding: 3px; font-weight: bold; }
+        .prompt-console { color: var(--neon); border-left: 4px solid var(--white); padding-left: 6px; margin: 6px 0;}
+        .red { color: #ff0000; font-weight: bold; text-shadow: 0 0 15px #ff0000; }
+        .centered-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
+        
+        #scanner-container {
+            position: relative; border: 3px solid #003300; opacity: 0.1; pointer-events: none;
+            background: rgba(0, 40, 0, 0.4); width: 110px; height: 140px; display: flex; align-items: center; justify-content: center;
+        }
+        #scanner-dots { font-size: 18px; line-height: 0.6; letter-spacing: 5px; color: #008800; user-select: none; }
+        #laser { position: absolute; width: 100%; height: 3px; background: #fff; box-shadow: 0 0 20px var(--neon); top: 0; left: 0; display: none; z-index: 20; }
+        
+        button { 
+            background: #001a00; color: var(--neon); border: 2px solid #008800; 
+            padding: 14px 20px; font-family: 'Consolas', monospace; cursor: pointer;
+            text-transform: uppercase; font-weight: bold; font-size: 12px;
+            box-shadow: 4px 4px 0 #003300;
+        }
+        button:hover:not(:disabled) { background: var(--neon); color: #000; box-shadow: none; transform: translate(2px, 2px); }
+        button:disabled { border-color: #002200; color: #002200; opacity: 0.3; }
+        
+        #prog-bar { color: var(--white); font-size: 11px; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px;}
+        #telemetry-box { font-size: 9px; color: #00aa00; height: 65px; overflow: hidden; width: 100%; border-top: 1px solid #003300; margin-top: 8px; background: rgba(0,5,0,0.8); }
+        #countdown { font-size: 1.3em; color: var(--white); border: 1px double var(--neon); padding: 10px; margin: 10px 0; background: rgba(0,30,0,0.9); text-align: center; font-weight: bold; }
+        
+        .hidden { display: none; }
+        @keyframes scanMotion { 0% { top: 0%; } 100% { top: 100%; } }
+        .glitch-active { animation: glitch 0.08s infinite; background: #500 !important; }
+        @keyframes glitch { 0% { transform: translate(2px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 2px); } }
+    </style>
+</head>
+<body class="crt-flicker">
+
+    <div id="console">
+        <div id="init-screen">
+            <div id="init-logs"></div>
+            <div class="centered-ui">
+                <div class="line red" style="font-size: 15px;">[!] ATENCIÓN: PROTOCOLO DE AUDIO ANALÓGICO [!]</div>
+                <div class="line" style="color:#fff; border: 1px solid #fff; padding: 8px; margin: 10px 0;">SUBA EL VOLUMEN AL 100% PARA VALIDACIÓN SÓNICA</div>
+                <button id="btn-init" class="hidden" onclick="initApp()">> EJECUTAR_ACCESO_SISTEMA.EXE</button>
+            </div>
+        </div>
+
+        <div id="boot-screen" class="hidden">
+            <div id="boot-header" style="color: #fff; font-size: 11px; border-bottom: 1px solid #004400; padding-bottom: 5px;"></div>
+            <div id="boot-logs" style="height: 230px; overflow: hidden; padding: 5px;"></div>
+            <div class="centered-ui">
+                <button id="btn-start-scan" disabled onclick="startScanningSequence()">> INICIALIZAR_BIOMETRIC_SCAN.EXE</button>
+            </div>
+        </div>
+
+        <div id="scan-screen" class="hidden">
+            <div id="scan-logs" style="height: 140px; overflow: hidden; font-size: 11px; border-bottom: 1px solid #003300;"></div>
+            <div class="centered-ui">
+                <div id="prog-bar">ESPERANDO CONTACTO [░░░░░░░░░░] 0%</div>
+                <div id="scanner-container">
+                    <div id="laser"></div>
+                    <div id="scanner-dots">::::<br>::::<br>::::<br>::::</div>
+                </div>
+                <div id="telemetry-box"></div>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden">
+            <div class="line" style="background:var(--neon); color:#000; padding: 4px 8px; font-weight:bold; font-size: 13px;">ID_USER_RECOGNIZED: <span id="decrypt-name"></span></div>
+            <div id="final-text-area" style="font-size: 11px; margin-top: 10px;"></div>
+            <div id="countdown"></div>
+            <div class="line red" style="text-align: center; margin-bottom: 5px; font-size: 10px;">CONFIRMA ASISTENCIA PRESIONANDO:</div>
+            <button id="btn-conf" disabled onclick="startVirusBroma()">> CONFIRMAR_ASISTENCIA.EXE</button>
+            <div id="virus-logs" class="red" style="margin-top:10px; font-size: 9px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawNombre = (urlParams.get('nombre') || "USUARIO_DESCONOCIDO");
+        let audioCtx, scanOsc, timer, count = 0;
+
+        function playAggressiveSound(freq, duration, type='sawtooth', vol=0.08) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const noise = audioCtx.createOscillator();
+            const noiseGain = audioCtx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            noise.type = 'square';
+            noise.frequency.setValueAtTime(freq * 1.5, audioCtx.currentTime);
+            noiseGain.gain.setValueAtTime(vol * 0.5, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+
+            osc.connect(gain); noise.connect(noiseGain); noiseGain.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(); noise.start();
+            osc.stop(audioCtx.currentTime + duration);
+            noise.stop(audioCtx.currentTime + duration);
+        }
+
+        function speakAndType(text, targetId, prompt, callback) {
+            const el = document.createElement("div");
+            el.className = "line " + (prompt === 'user' ? 'prompt-user' : 'prompt-console');
+            document.getElementById(targetId).appendChild(el);
+            if(prompt === 'user') el.innerHTML = "> ";
+            
+            const words = text.split("");
+            let i = 0;
+            const speed = 35;
+
+            const typeInterval = setInterval(() => {
+                if(i < words.length) {
+                    el.innerHTML += words[i];
+                    playAggressiveSound(120 + (Math.random()*220), 0.03, 'sawtooth', 0.02);
+                    i++;
+                } else { clearInterval(typeInterval); }
+            }, speed);
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-MX'; utterance.rate = 1.0; utterance.pitch = 0.5;
+            utterance.onend = () => { 
+                clearInterval(typeInterval); 
+                el.innerHTML = (prompt === 'user' ? "> " : "") + text;
+                if(callback) callback(); 
+            };
+            window.speechSynthesis.speak(utterance);
+        }
+
+        window.onload = async () => {
+            const boot = [
+                "SYSTEM_CORE_V13_STABLE", "DMA_ADDRESS: 0x00F221", "DRIVE_C: MOUNTED",
+                "VOLTAGE_RAILS: 5.02V [STABLE]", "BIOS_DATE: 02/02/2026",
+                "BIOMETRIC_SENSOR_V8: READY", "HEART_RATE_MONITOR: ACTIVE",
+                "PULSE_OXY_SCANNER: ONLINE", "CRYPTO_KEY_4096: LOADED",
+                "MEM_DUMP: 0x0021FF - 0x00AF12", "AUTHOR: DIEGO BELEÑO", "STATUS: SYSTEM_READY"
+            ];
+            for(let l of boot) {
+                const d = document.createElement("div"); d.innerText = l;
+                document.getElementById("init-logs").appendChild(d);
+                await new Promise(r => setTimeout(r, 45));
+            }
+            document.getElementById("btn-init").classList.remove("hidden");
+        };
+
+        async function initApp() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            playAggressiveSound(600, 0.2, 'square', 0.15);
+            document.getElementById("init-screen").classList.add("hidden");
+            document.getElementById("boot-screen").classList.remove("hidden");
+            
+            await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045.6456]", "boot-header");
+            await typeSimple("PROGRAMADO POR: DIEGO BELEÑO", "boot-header");
+            
+            const msg = "SISTEMA DE SEGURIDAD INICIALIZADO. PARA CONTINUAR CON EL PROTOCOLO CORPORATIVO, DIEGO NECESITA RECIBIR SUS DATOS BIOMÉTRICOS. POR FAVOR, ASEGÚRESE DE TENER EL VOLUMEN AL MÁXIMO Y PRESIONE EN INICIALIZAR BIOMETRIC SCAN PUNTO EXE.";
+            speakAndType(msg, "boot-logs", 'user', () => { 
+                playAggressiveSound(900, 0.1, 'square');
+                document.getElementById("btn-start-scan").disabled = false; 
+            });
+        }
+
+        async function startScanningSequence() {
+            playAggressiveSound(200, 0.1, 'sawtooth');
+            document.getElementById("boot-screen").classList.add("hidden");
+            document.getElementById("scan-screen").classList.remove("hidden");
+            
+            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE LA MATRIZ DE PUNTOS. NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA VASCULAR Y RECOLECTA LOS DATOS PARA DIEGO.";
+            speakAndType(msg, "scan-logs", 'console', () => {
+                playAggressiveSound(1000, 0.2, 'square');
+                document.getElementById("scanner-container").style.opacity = "1";
+                document.getElementById("scanner-container").style.pointerEvents = "auto";
+            });
+        }
+
+        function triggerScan(e) {
+            e.preventDefault();
+            playAggressiveSound(150, 0.1, 'sawtooth');
+            scanOsc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            scanOsc.type = 'sawtooth'; scanOsc.frequency.value = 45;
+            gain.gain.value = 0.06; scanOsc.connect(gain); gain.connect(audioCtx.destination);
+            scanOsc.start();
+            
+            document.getElementById("laser").style.display = "block";
+            document.getElementById("laser").style.animation = "scanMotion 1.5s infinite alternate linear";
+            
+            const steps = [
+                {p: 5, v: "ESCANEANDO HUELLA DACTILAR."},
+                {p: 25, v: "EXTRAYENDO DATOS DEL SUJETO."},
+                {p: 50, v: "ASIGNANDO BLOQUE DE INFORMACIÓN EN LA BASE DE DATOS."},
+                {p: 75, v: "BORRANDO TIKTOK DEL DISPOSITIVO."},
+                {p: 90, v: "FINALIZANDO CARGA. NO RETIRE LA HUELLA."}
+            ];
+
+            timer = setInterval(() => {
+                if(count >= 99) return;
+                count += 0.55;
+                const cur = Math.floor(count);
+                document.getElementById("prog-bar").innerText = `CAPTURANDO... [${"█".repeat(Math.floor(cur/10))}${ "░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
+
+                if(steps.length > 0 && cur >= steps[0].p) {
+                    const s = steps.shift();
+                    speakAndType(s.v, "scan-logs", 'console');
+                }
+
+                if(cur % 4 === 0) {
+                    const stats = ["PULSE: " + (72+Math.random()*15).toFixed(0) + "BPM", "SPO2: 99%", "DNA: VALID"];
+                    document.getElementById("telemetry-box").innerHTML = stats[Math.floor(Math.random()*stats.length)] + "<br>" + document.getElementById("telemetry-box").innerHTML;
+                }
+
+                if(cur >= 98) {
+                    clearInterval(timer);
+                    speakAndType("BIENVENIDO " + rawNombre + ". ACCESO CONCEDIDO.", "scan-logs", 'console', showResult);
+                }
+            }, 80);
+        }
+
+        async function showResult() {
+            if(scanOsc) scanOsc.stop();
+            playAggressiveSound(1100, 0.4, 'square', 0.2);
+            document.getElementById("scan-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.remove("hidden");
+            document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
+            
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO A MI CUMPLEAÑOS ESTE 7 DE FEBRERO A LAS 18 HORAS EN MI CASA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR MI ESTILO. TIPS: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. RECUERDA SEGUIR LOS PASOS EL DÍA DE LA REUNIÓN. CONFIRMA AHORA.";
+            
+            speakAndType(msg, "final-text-area", 'console', () => {
+                document.getElementById("btn-conf").disabled = false;
+            });
+
+            document.getElementById("final-text-area").innerHTML += `
+                <div class="line" style="color:#fff; border:1px solid #00ff41; padding:6px; margin-top:10px; background: rgba(0,30,0,0.5);">
+                [CÓDIGO_VESTIMENTA_DIEGO]:<br>
+                - PANTALONES ANCHOS (BAGGY)<br>
+                - ZAPATOS BLANCOS<br>
+                - GORRA (REQUERIDO)<br>
+                - CAMISETA SOBRE MANGA LARGA
+                </div>
+            `;
+            setInterval(updateClock, 1000);
+        }
+
+        function updateClock() {
+            const diff = new Date('February 7, 2026 18:00:00').getTime() - new Date().getTime();
+            if(diff < 0) return;
+            const d = Math.floor(diff/86400000), h = Math.floor((diff%86400000)/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+            document.getElementById("countdown").innerText = `T-MINUS: ${d}D ${h}H ${m}M ${s}S`;
+        }
+
+        function startVirusBroma() {
+            playAggressiveSound(40, 0.8, 'sawtooth', 0.3);
+            document.body.classList.add("glitch-active");
+            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. TUS DATOS SON MÍOS. PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN EN MI CASA. CONFÍRMAME POR WHATSAPP AHORA.";
+            speakAndType(msg, "virus-logs", 'console', () => {
+                window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("SYSTEM_CRITICAL: " + rawNombre + " HA SIDO INFECTADO.");
+            });
+            setInterval(() => {
+                const el = document.createElement("div"); el.innerText = "S̸Y̸S̸_E̸R̸R̸O̸R̸_0x" + Math.random().toString(16).slice(2,6).toUpperCase();
+                document.getElementById("virus-logs").prepend(el);
+                playAggressiveSound(40 + Math.random()*20, 0.05, 'square', 0.1);
+            }, 100);
+        }
+
+        async function typeSimple(t, id) {
+            const el = document.createElement("div"); el.className = "line";
+            document.getElementById(id).appendChild(el);
+            for(let c of t) {
+                el.innerHTML += c; 
+                playAggressiveSound(200, 0.02, 'sine', 0.01);
+                await new Promise(r => setTimeout(r, 25));
+            }
+        }
+
+        const scanEl = document.getElementById("scanner-container");
+        scanEl.addEventListener('touchstart', triggerScan); 
+        scanEl.addEventListener('touchend', () => { if(count < 100) { clearInterval(timer); if(scanOsc) scanOsc.stop(); document.getElementById("laser").style.display = "none"; } });
+    </script>
+</body>
+</html>
