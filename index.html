@@ -5,126 +5,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TERMINAL_RESIDENCE_FINAL_BUILD</title>
     <style>
-        :root { --neon: #00ff41; --bg: #000a00; --white: #e0e0e0; }
+        :root { --neon: #00ff41; --bg: #000a00; --white: #e0e0e0; --red: #ff0000; }
         body { 
             background: var(--bg); color: var(--neon); 
             font-family: 'Consolas', 'Courier New', monospace; 
             padding: 10px; margin: 0; height: 100vh; overflow: hidden;
             font-size: 11px; line-height: 1.1;
         }
-        #console { border: 1px solid #004400; padding: 10px; height: 94vh; display: flex; flex-direction: column; position: relative; box-shadow: inset 0 0 50px #000; overflow: hidden; transition: border-color 0.3s;}
+        #console { border: 2px solid #004400; padding: 10px; height: 94vh; display: flex; flex-direction: column; position: relative; box-shadow: inset 0 0 50px #000; overflow: hidden; transition: border-color 0.3s;}
         .line { margin-bottom: 2px; white-space: pre-wrap; text-transform: uppercase; }
-        .prompt-user { color: var(--white); background: rgba(0, 255, 65, 0.15); padding: 3px; font-weight: bold; }
-        .prompt-console { color: var(--neon); border-left: 4px solid var(--white); padding-left: 6px; margin: 6px 0;}
-        .red { color: #ff0000; font-weight: bold; text-shadow: 0 0 15px #ff0000; }
+        .prompt-user { color: var(--white); background: rgba(0, 255, 65, 0.2); padding: 5px; font-weight: bold; border-left: 3px solid var(--white); }
+        .prompt-console { color: var(--neon); border-left: 4px solid var(--neon); padding-left: 6px; margin: 8px 0; background: rgba(0, 40, 0, 0.3);}
+        .red { color: var(--red); font-weight: bold; text-shadow: 0 0 10px var(--red); }
         .centered-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
         
-        /* Ajuste de posición del escáner */
-        #scanner-container {
-            position: relative; border: 3px solid #003300; opacity: 0.1; pointer-events: none;
-            background: rgba(0, 40, 0, 0.4); width: 110px; height: 140px; display: flex; align-items: center; justify-content: center;
-            margin-top: 20px;
+        /* Notice Box para instrucciones claras */
+        .notice-box {
+            border: 1px double var(--neon);
+            background: rgba(0, 30, 0, 0.8);
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            width: 90%;
         }
-        #scanner-dots { font-size: 18px; line-height: 0.6; letter-spacing: 5px; color: #008800; user-select: none; }
-        #laser { position: absolute; width: 100%; height: 3px; background: #fff; box-shadow: 0 0 20px var(--neon); top: 0; left: 0; display: none; z-index: 20; }
+
+        #scanner-container {
+            position: relative; border: 4px solid #005500; opacity: 0.1; pointer-events: none;
+            background: rgba(0, 60, 0, 0.2); width: 130px; height: 160px; display: flex; align-items: center; justify-content: center;
+            margin-top: 15px; box-shadow: 0 0 20px rgba(0,255,65,0.1);
+        }
+        #scanner-dots { font-size: 22px; line-height: 0.7; letter-spacing: 6px; color: #00ff41; user-select: none; opacity: 0.5; }
+        #laser { position: absolute; width: 100%; height: 4px; background: #fff; box-shadow: 0 0 25px var(--neon), 0 0 10px #fff; top: 0; left: 0; display: none; z-index: 20; }
         
         button { 
-            background: #001a00; color: var(--neon); border: 2px solid #008800; 
-            padding: 14px 20px; font-family: 'Consolas', monospace; cursor: pointer;
-            text-transform: uppercase; font-weight: bold; font-size: 12px;
-            box-shadow: 4px 4px 0 #003300;
+            background: #002200; color: var(--neon); border: 2px solid var(--neon); 
+            padding: 16px 24px; font-family: 'Consolas', monospace; cursor: pointer;
+            text-transform: uppercase; font-weight: bold; font-size: 13px;
+            box-shadow: 6px 6px 0 #004400; transition: all 0.1s;
         }
-        button:hover:not(:disabled) { background: var(--neon); color: #000; box-shadow: none; transform: translate(2px, 2px); }
-        button:disabled { border-color: #002200; color: #002200; opacity: 0.3; }
+        button:hover:not(:disabled) { background: var(--neon); color: #000; box-shadow: none; transform: translate(3px, 3px); }
+        button:disabled { border-color: #003300; color: #003300; opacity: 0.4; box-shadow: none; }
         
-        #prog-bar { color: var(--white); font-size: 11px; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px;}
+        #prog-bar { color: var(--white); font-size: 12px; margin-bottom: 8px; font-weight: bold; text-shadow: 0 0 5px var(--neon); }
         
-        /* Telemetría más visible */
         #telemetry-box { 
-            font-size: 10px; color: #00ff41; height: 80px; overflow: hidden; width: 100%; 
-            border-top: 1px solid #00ff41; margin-top: 15px; background: rgba(0,20,0,0.9); 
-            padding: 5px; font-weight: bold;
+            font-size: 9px; color: #00ff41; height: 70px; overflow: hidden; width: 100%; 
+            border-top: 1px solid #00ff41; margin-top: 10px; background: rgba(0,10,0,0.9); 
+            padding: 5px; font-family: 'Courier New';
         }
-        #countdown { font-size: 1.3em; color: var(--white); border: 1px double var(--neon); padding: 10px; margin: 10px 0; background: rgba(0,30,0,0.9); text-align: center; font-weight: bold; }
+
+        #countdown { font-size: 1.5em; color: #fff; border: 2px solid var(--red); padding: 15px; margin: 15px 0; background: rgba(40,0,0,0.5); text-align: center; font-weight: bold; letter-spacing: 2px; }
         
-        .footer-info { font-size: 9px; color: #004400; margin-top: 5px; }
+        /* Copyright más visible */
+        .footer-info { 
+            font-size: 11px; color: var(--neon); margin-top: 15px; font-weight: bold; 
+            text-align: center; border-top: 1px dashed #004400; width: 100%; padding-top: 10px;
+        }
+
         .hidden { display: none; }
         @keyframes scanMotion { 0% { top: 0%; } 100% { top: 100%; } }
-        .glitch-active { animation: glitch 0.08s infinite; background: #500 !important; }
-        @keyframes glitch { 0% { transform: translate(2px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 2px); } }
+        .glitch-active { animation: glitch 0.05s infinite; background: #300 !important; }
+        @keyframes glitch { 0% { transform: translate(3px, 0); } 50% { transform: translate(-3px, 2px); } 100% { transform: translate(0, -2px); } }
     </style>
 </head>
-<body class="crt-flicker">
+<body>
 
     <div id="console">
         <div id="init-screen">
             <div id="init-logs"></div>
             <div class="centered-ui">
-                <div class="line red" style="font-size: 15px;">[!] ATENCIÓN: PROTOCOLO DE INSTRUCCIONES VÍA AUDIO [!]</div>
-                <div class="line" style="color:#fff; border: 1px solid #fff; padding: 8px; margin: 10px 0;">SUBA EL VOLUMEN AL 100% PARA RECIBIR LAS INSTRUCCIONES</div>
-                <button id="btn-init" class="hidden" onclick="playClick(); initApp()">> EJECUTAR_ACCESO_SISTEMA.EXE</button>
+                <div class="line red" style="font-size: 16px; border: 2px solid red; padding: 10px;">[!] ALERTA: PROTOCOLO AUDITIVO REQUERIDO [!]</div>
+                <div class="notice-box">
+                    <span style="color:#fff;">SISTEMA DE SEGURIDAD BIOMÉTRICA</span><br>
+                    POR FAVOR, ASEGÚRESE DE QUE SU VOLUMEN ESTÉ AL MÁXIMO NIVEL.
+                </div>
+                <button id="btn-init" class="hidden" onclick="playClick(); initApp()">> ACCEDER_NODO_CENTRAL.EXE</button>
             </div>
         </div>
 
         <div id="boot-screen" class="hidden">
-            <div id="boot-header" style="color: #fff; font-size: 11px; border-bottom: 1px solid #004400; padding-bottom: 5px;"></div>
-            <div id="boot-logs" style="height: 230px; overflow: hidden; padding: 5px;"></div>
+            <div id="boot-header" style="color: #fff; font-size: 11px; border-bottom: 1px solid #00ff41; padding-bottom: 5px; margin-bottom: 10px;"></div>
+            <div id="boot-logs" style="height: 200px; overflow: hidden; padding: 5px;"></div>
             <div class="centered-ui">
-                <button id="btn-start-scan" disabled onclick="playClick(); startScanningSequence()">> INICIALIZAR_BIOMETRIC_SCAN.EXE</button>
-                <div class="footer-info">PROGRAMADO POR DIEGO BELEÑO - TODOS LOS DERECHOS RESERVADOS © 2026</div>
+                <div class="notice-box" style="font-size: 10px; border-color: #fff;">
+                    INSTRUCCIÓN: ESCUCHE EL MENSAJE Y PRESIONE EL BOTÓN INFERIOR PARA INICIAR EL ESCANEO.
+                </div>
+                <button id="btn-start-scan" disabled onclick="playClick(); startScanningSequence()">> INICIALIZAR_ESCÁNER_HUELLA.SH</button>
+                <div class="footer-info">PROPIEDAD DE DIEGO BELEÑO © 2026 - ACCESO RESTRINGIDO</div>
             </div>
         </div>
 
         <div id="scan-screen" class="hidden">
-            <div id="scan-logs" style="height: 120px; overflow: hidden; font-size: 11px; border-bottom: 1px solid #003300;"></div>
+            <div id="scan-logs" style="height: 140px; overflow: hidden; font-size: 11px; border-bottom: 1px solid #005500;"></div>
             <div class="centered-ui">
-                <div id="prog-bar">ESPERANDO CONTACTO... [░░░░░░░░░░] 0%</div>
+                <div id="prog-bar">STATUS: ESPERANDO DEDO...</div>
                 <div id="scanner-container">
                     <div id="laser"></div>
-                    <div id="scanner-dots">::::<br>::::<br>::::<br>::::</div>
+                    <div id="scanner-dots">::::<br>::::<br>::::<br>::::<br>::::</div>
                 </div>
                 <div id="telemetry-box"></div>
+                <div class="footer-info">AUTORIZACIÓN REQUERIDA: DIEGO BELEÑO © 2026</div>
             </div>
         </div>
 
         <div id="result-screen" class="hidden">
-            <div class="line" style="background:var(--neon); color:#000; padding: 4px 8px; font-weight:bold; font-size: 13px;">ID_USER_RECOGNIZED: <span id="decrypt-name"></span></div>
-            <div id="final-text-area" style="font-size: 11px; margin-top: 10px;"></div>
+            <div class="line" style="background:var(--neon); color:#000; padding: 6px; font-weight:bold; font-size: 14px; text-align: center;">IDENTIDAD CONFIRMADA: <span id="decrypt-name"></span></div>
+            <div id="final-text-area" style="font-size: 11px; margin-top: 15px; border-left: 2px solid var(--neon); padding-left: 10px;"></div>
             <div id="countdown"></div>
-            <div class="line red" style="text-align: center; margin-bottom: 5px; font-size: 10px;">CONFIRMA ASISTENCIA PRESIONANDO:</div>
-            <button id="btn-conf" disabled onclick="playClick(); startVirusBroma()">> CONFIRMAR_ASISTENCIA.EXE</button>
-            <div id="virus-logs" class="red" style="margin-top:10px; font-size: 9px;"></div>
+            <div class="line red" style="text-align: center; margin-bottom: 8px;">¡ADVERTENCIA! ACCIÓN REQUERIDA:</div>
+            <button id="btn-conf" disabled onclick="playClick(); startVirusBroma()">> ENVIAR_CONFIRMACIÓN_FINAL.EXE</button>
+            <div id="virus-logs" class="red" style="margin-top:15px; font-size: 10px;"></div>
+            <div class="footer-info" style="color: #ff0000; border-color: #ff0000;">© 2026 DIEGO BELEÑO - SISTEMA DE INVITACIONES</div>
         </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const rawNombre = (urlParams.get('nombre') || "USUARIO_DESCONOCIDO");
+        const rawNombre = (urlParams.get('nombre') || "INVITADO_ANÓNIMO");
         let audioCtx, scanOsc, timer, count = 0;
         
         let activeSteps = [];
         const originalSteps = [
-            {p: 0, v: "ESCANEANDO HUELLA DACTILAR..."},
-            {p: 20, v: "EXTRAYENDO MINUCIAS Y PUNTOS DE CONTROL..."},
-            {p: 45, v: "MAPEO DE TEXTURA DÉRMICA COMPLETADO..."},
-            {p: 70, v: "VERIFICANDO INTEGRIDAD DE DATOS BIOMÉTRICOS..."},
-            {p: 95, v: "SINCRONIZANDO CON BASE DE DATOS CENTRAL..."}
+            {p: 5, v: "ANALIZANDO CRESTAS PAPILARES..."},
+            {p: 25, v: "COMPROBANDO PULSO HEMATOLÓGICO..."},
+            {p: 45, v: "EXTRAYENDO LOCALIZACIÓN GPS..."},
+            {p: 65, v: "VINCULANDO CUENTA BANCARIA..."},
+            {p: 85, v: "FORMATEANDO MEMORIA CACHÉ..."},
+            {p: 98, v: "ACCESO CONCEDIDO CON ÉXITO."}
         ];
 
-        function playAggressiveSound(freq, duration, type='sawtooth', vol=0.08) {
+        function playAggressiveSound(freq, duration, type='sawtooth', vol=0.1) {
             if(!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            // Efecto de distorsión simple bajando la frecuencia
+            osc.frequency.exponentialRampToValueAtTime(freq/2, audioCtx.currentTime + duration);
             gain.gain.setValueAtTime(vol, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
 
-        function playClick() { playAggressiveSound(800, 0.1, 'square', 0.1); }
-        function playUnlock() { playAggressiveSound(1200, 0.2, 'sine', 0.1); setTimeout(()=>playAggressiveSound(1600, 0.2, 'sine', 0.1), 100); }
+        function playClick() { playAggressiveSound(150, 0.15, 'square', 0.15); }
+        function playUnlock() { playAggressiveSound(900, 0.3, 'sawtooth', 0.1); }
 
         function speakAndType(text, targetId, prompt, callback) {
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
@@ -136,13 +161,13 @@
             const typeInterval = setInterval(() => {
                 if(i < text.length) {
                     el.innerHTML = (prompt === 'user' ? "> " : "") + text.substring(0, i+1);
-                    playAggressiveSound(150 + (Math.random()*100), 0.03, 'sawtooth', 0.02);
+                    playAggressiveSound(60 + (Math.random()*40), 0.04, 'square', 0.03);
                     i++;
                 } else { clearInterval(typeInterval); }
-            }, 30);
+            }, 25);
 
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'es-MX'; utterance.rate = 1.1; utterance.pitch = 0.5;
+            utterance.lang = 'es-MX'; utterance.rate = 1.0; utterance.pitch = 0.4;
             utterance.onend = () => { 
                 clearInterval(typeInterval); 
                 el.innerHTML = (prompt === 'user' ? "> " : "") + text;
@@ -153,21 +178,20 @@
         }
 
         window.onload = async () => {
-            const boot = ["SYSTEM_CORE_V13_STABLE", "DMA_ADDRESS: 0x00F221", "AUTHOR: DIEGO BELEÑO", "STATUS: SYSTEM_READY"];
+            const boot = ["LOADER_V2.0_POWERED_BY_BELEÑO", "ENCRYPT_STK: ENABLED", "SOUND_ENGINE: MAX_THRASH", "READY FOR SCAN..."];
             for(let l of boot) {
                 const d = document.createElement("div"); d.innerText = l;
                 document.getElementById("init-logs").appendChild(d);
-                await new Promise(r => setTimeout(r, 45));
+                await new Promise(r => setTimeout(r, 60));
             }
             document.getElementById("btn-init").classList.remove("hidden");
-            playUnlock();
         };
 
         async function initApp() {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             document.getElementById("init-screen").classList.add("hidden");
             document.getElementById("boot-screen").classList.remove("hidden");
-            await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045]", "boot-header");
+            await typeSimple("TERMINAL SECURE ACCESS - PROTOCOLO V.26", "boot-header");
             
             const msg = "SISTEMA DE SEGURIDAD LISTO. RECUERDE MANTENER EL VOLUMEN AL MÁXIMO. NECESITAMOS SUS DATOS BIOMÉTRICOS. SE LE REALIZARÁ UN ESCÁNER DIGITAL. PRESIONE EL BOTÓN PARA CONTINUAR.";
             speakAndType(msg, "boot-logs", 'user', () => { 
@@ -193,22 +217,21 @@
             if (count >= 100) return;
             scanOsc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            scanOsc.type = 'sawtooth'; scanOsc.frequency.value = 45;
-            gain.gain.value = 0.06; scanOsc.connect(gain); gain.connect(audioCtx.destination);
+            scanOsc.type = 'sawtooth'; scanOsc.frequency.value = 55; // Más bajo y agresivo
+            gain.gain.value = 0.1; scanOsc.connect(gain); gain.connect(audioCtx.destination);
             scanOsc.start();
             document.getElementById("laser").style.display = "block";
-            document.getElementById("laser").style.animation = "scanMotion 1.5s infinite alternate linear";
+            document.getElementById("laser").style.animation = "scanMotion 1.2s infinite alternate ease-in-out";
             
             timer = setInterval(() => {
-                count += 0.65;
+                count += 0.45; // MÁS LENTO: Antes era 0.65
                 const cur = Math.min(Math.floor(count), 100);
                 
-                document.getElementById("prog-bar").innerText = `CAPTURANDO... [${"█".repeat(Math.floor(cur/10))}${"░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
+                document.getElementById("prog-bar").innerText = `ANALIZANDO... [${"█".repeat(Math.floor(cur/10))}${"░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
                 
                 if(cur >= 100) { 
                     clearInterval(timer); scanOsc.stop();
                     document.getElementById("laser").style.display = "none";
-                    document.getElementById("laser").style.animation = "none";
                     speakAndType("PROCESO COMPLETADO. BIENVENIDO " + rawNombre, "scan-logs", 'console', () => {
                         showResult();
                     });
@@ -219,18 +242,18 @@
                     speakAndType(activeSteps.shift().v, "scan-logs", 'console');
                 }
 
-                // Telemetría tipo "Real Raw Data"
-                if(cur % 2 === 0) {
-                    const hex = Array.from({length:4}, () => Math.floor(Math.random()*256).toString(16).toUpperCase().padStart(2,'0')).join(' ');
+                if(cur % 3 === 0) {
+                    const hex = Array.from({length:6}, () => Math.floor(Math.random()*256).toString(16).toUpperCase().padStart(2,'0')).join(':');
                     const rawLines = [
-                        `RAW_DATA: 0x${hex}`,
-                        `BIT_MAP_P_VAL: ${(Math.random()*1).toFixed(4)}`,
-                        `VECTOR_ID: {${(Math.random()*999).toFixed(0)}}`,
-                        `DPI_SENSE: 1200`
+                        `PACKET_LOST: 0%`,
+                        `CORE_TEMP: 88°C`,
+                        `MAC_ADDR: ${hex}`,
+                        `SIGNAL_STRENGTH: -${(Math.random()*100).toFixed(0)}dBm`,
+                        `ENCRYPT_IV: 0x${Math.random().toString(16).slice(2,10)}`
                     ];
                     document.getElementById("telemetry-box").innerHTML = `<div>> ${rawLines[Math.floor(Math.random()*rawLines.length)]}</div>` + document.getElementById("telemetry-box").innerHTML;
                 }
-            }, 80);
+            }, 100); // MÁS LENTO: Antes era 80ms
         }
 
         const endScan = () => { 
@@ -238,13 +261,13 @@
                 clearInterval(timer); 
                 if(scanOsc) scanOsc.stop(); 
                 document.getElementById("laser").style.display = "none"; 
-                playAggressiveSound(50, 0.4, 'sawtooth', 0.2); 
+                playAggressiveSound(40, 0.6, 'sawtooth', 0.4); 
                 document.getElementById("console").style.borderColor = "#ff0000";
-                setTimeout(() => document.getElementById("console").style.borderColor = "#004400", 500);
-                speakAndType("ERROR: CONTACTO PERDIDO. REINICIANDO...", "scan-logs", 'console');
+                setTimeout(() => document.getElementById("console").style.borderColor = "#004400", 600);
+                speakAndType("ERROR CRÍTICO: CONTACTO INTERRUMPIDO. REINICIANDO NODO...", "scan-logs", 'console');
                 count = 0; 
                 activeSteps = [...originalSteps];
-                document.getElementById("prog-bar").innerText = `ESPERANDO CONTACTO... [░░░░░░░░░░] 0%`;
+                document.getElementById("prog-bar").innerText = `STATUS: ESCANEO FALLIDO - REINTENTE`;
                 document.getElementById("telemetry-box").innerHTML = ""; 
             } 
         };
@@ -254,7 +277,7 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA TU ASISTENCIA AHORA.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA TU ASISTENCIA AHORA.";
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
                 playUnlock();
@@ -270,27 +293,29 @@
 
         function startVirusBroma() {
             document.body.classList.add("glitch-active");
-            playAggressiveSound(40, 1.0, 'sawtooth', 0.3);
+            playAggressiveSound(30, 2.0, 'sawtooth', 0.5);
             const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN...";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
-                    window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA POR: " + rawNombre + ". DISPOSITIVO INFECTADO.");
-                }, 2000);
+                    window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA POR: " + rawNombre + ". MI DISPOSITIVO HA SIDO INFECTADO.");
+                }, 2500);
             });
             setInterval(() => {
-                const el = document.createElement("div"); el.innerText = "FATAL_ERROR_0x" + Math.random().toString(16).slice(2,6).toUpperCase();
+                const el = document.createElement("div"); 
+                el.className = "red";
+                el.innerText = "OVERRIDE_AUTH_ERROR_0x" + Math.random().toString(16).slice(2,8).toUpperCase();
                 document.getElementById("virus-logs").prepend(el);
-            }, 100);
+            }, 80);
         }
 
         async function typeSimple(t, id) {
             const el = document.createElement("div"); el.className = "line";
             document.getElementById(id).appendChild(el);
-            for(let c of t) { el.innerHTML += c; await new Promise(r => setTimeout(r, 25)); }
+            for(let c of t) { el.innerHTML += c; await new Promise(r => setTimeout(r, 30)); }
         }
         
         const scanEl = document.getElementById("scanner-container");
-        scanEl.addEventListener('touchstart', triggerScan); 
+        scanEl.addEventListener('touchstart', (e) => { e.preventDefault(); triggerScan(e); }); 
         scanEl.addEventListener('mousedown', triggerScan); 
         scanEl.addEventListener('touchend', endScan);
         scanEl.addEventListener('mouseup', endScan);
