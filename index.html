@@ -126,11 +126,11 @@
         
         let activeSteps = [];
         const originalSteps = [
-            {p: 5, v: "ANALIZANDO CRESTAS PAPILARES..."},
-            {p: 25, v: "COMPROBANDO PULSO HEMATOLÓGICO..."},
-            {p: 45, v: "EXTRAYENDO LOCALIZACIÓN GPS..."},
-            {p: 65, v: "VINCULANDO CUENTA BANCARIA..."},
-            {p: 85, v: "FORMATEANDO MEMORIA CACHÉ..."},
+            {p: 0, v: "ESCANEANDO HUELLA DIGITAL..."},
+            {p: 25, v: "MIDIENDO PULSO CARDIACO..."},
+            {p: 45, v: "ENVIANDO INFROMACIÓN A LA BASE DE DATOS..."},
+            {p: 65, v: "GUARDANDO DATOS DE USUARIO..."},
+            {p: 85, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."},
             {p: 98, v: "ACCESO CONCEDIDO CON ÉXITO."}
         ];
 
@@ -277,7 +277,7 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA TU ASISTENCIA AHORA.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO. CONSEJO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. CONFIRMA TU ASISTENCIA AHORA PRESIONANDO ENVIAR_CONFIRMACIÓN_FINAL.EXE.";
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
                 playUnlock();
@@ -294,7 +294,7 @@
         function startVirusBroma() {
             document.body.classList.add("glitch-active");
             playAggressiveSound(30, 2.0, 'sawtooth', 0.5);
-            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN...";
+            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR SU DISPOSITIVO, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN, ESPERE";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
                     window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA POR: " + rawNombre + ". MI DISPOSITIVO HA SIDO INFECTADO.");
@@ -322,3 +322,4 @@
     </script>
 </body>
 </html>
+
