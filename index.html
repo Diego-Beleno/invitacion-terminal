@@ -77,7 +77,7 @@
                     <span style="color:#fff;">SISTEMA DE SEGURIDAD BIOMÉTRICA</span><br>
                     POR FAVOR, ASEGÚRESE DE QUE SU VOLUMEN ESTÉ AL MÁXIMO NIVEL.
                 </div>
-                <button id="btn-init" class="hidden" onclick="playClick(); initApp()">> ACCEDER_AL_SISTEMA.EXE</button>
+                <button id="btn-init" class="hidden" onclick="initApp()">> ACCEDER_AL_SISTEMA.EXE</button>
             </div>
         </div>
 
@@ -88,7 +88,7 @@
                 <div class="notice-box" style="font-size: 10px; border-color: #fff;">
                     INSTRUCCIÓN: ESCUCHE EL MENSAJE Y PRESIONE EL BOTÓN INFERIOR PARA INICIAR EL ESCANEO.
                 </div>
-                <button id="btn-start-scan" disabled onclick="playClick(); startScanningSequence()">> INICIALIZAR_BIOMETRIC_SCAN.exe</button>
+                <button id="btn-start-scan" disabled onclick="startScanningSequence()">> INICIALIZAR_BIOMETRIC_SCAN.exe</button>
                 <div class="footer-info">PROPIEDAD DE DIEGO BELEÑO © 2026 - ACCESO RESTRINGIDO</div>
             </div>
         </div>
@@ -111,7 +111,7 @@
             <div id="final-text-area" style="font-size: 11px; margin-top: 15px; border-left: 2px solid var(--neon); padding-left: 10px;"></div>
             <div id="countdown"></div>
             <div class="line red" style="text-align: center; margin-bottom: 8px;">¡ADVERTENCIA! ACCIÓN REQUERIDA:</div>
-            <button id="btn-conf" disabled onclick="playClick(); startVirusBroma()">> ENVIAR_CONFIRMACIÓN_FINAL.EXE</button>
+            <button id="btn-conf" disabled onclick="startVirusBroma()">> ENVIAR_CONFIRMACIÓN_FINAL.EXE</button>
             <div id="virus-logs" class="red" style="margin-top:15px; font-size: 10px;"></div>
             <div class="footer-info" style="color: #ff0000; border-color: #ff0000;">© 2026 DIEGO BELEÑO - SISTEMA DE INVITACIONES</div>
         </div>
@@ -126,12 +126,20 @@
         const originalSteps = [
             {p: 0, v: "ESCANEANDO HUELLA DIGITAL..."},
             {p: 15, v: "MIDIENDO PULSO CARDIACO..."},
-            {p: 35, v: "ENVIANDO INFROMACIÓN A LA BASE DE DATOS..."},
-            {p: 50, v: "GUARDANDO DATOS DE USUARIO..."},
-            {p: 60, v: "COMPILANDO INFORMACIÓN, ESPERE..."},
+            {p: 25, v: "ENVIANDO INFROMACIÓN A LA BASE DE DATOS..."},
+            {p: 35, v: "GUARDANDO DATOS DE USUARIO..."},
             {p: 85, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."},
             {p: 98, v: "ACCESO CONCEDIDO CON ÉXITO."}
         ];
+
+        // FIJADOR PARA APPLE: Desbloquea la síntesis de voz con un sonido silencioso
+        function unlockAppleAudio() {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // "Cebar" la síntesis de voz con un mensaje vacío
+            const silent = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(silent);
+        }
 
         function playAggressiveSound(freq, duration, type='square', vol=0.1) {
             if(!audioCtx) return;
@@ -162,7 +170,9 @@
         }
 
         function speakAndType(text, targetId, prompt, callback) {
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            // Cancelar cualquier voz previa para evitar encolamiento en iOS
+            window.speechSynthesis.cancel();
+
             const el = document.createElement("div");
             el.className = "line " + (prompt === 'user' ? 'prompt-user' : 'prompt-console');
             const target = document.getElementById(targetId);
@@ -179,18 +189,21 @@
             }, 25);
 
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'es-MX'; utterance.rate = 1.0; utterance.pitch = 0.4;
+            utterance.lang = 'es-MX'; 
+            utterance.rate = 1.1; // Un poco más rápido para evitar cortes en iOS
+            utterance.pitch = 0.5;
+
             utterance.onend = () => { 
                 clearInterval(typeInterval); 
                 el.innerHTML = (prompt === 'user' ? "> " : "") + text;
                 if(callback) callback(); 
             };
-            window.speechSynthesis.cancel();
+
             window.speechSynthesis.speak(utterance);
         }
 
         window.onload = async () => {
-            const boot = ["LOADER_V2.0_POWERED_BY_BELEÑO", "ENCRYPT_STK: ENABLED", "SOUND_ENGINE: MAX_THRASH", "READY FOR SCAN..."];
+            const boot = ["LOADER_V2.0_POWERED_BY_BELEÑO", "ENCRYPT_STK: ENABLED", "SOUND_ENGINE: APPLE_FIX_V1", "READY FOR SCAN..."];
             for(let l of boot) {
                 const d = document.createElement("div"); d.innerText = l;
                 document.getElementById("init-logs").appendChild(d);
@@ -200,7 +213,11 @@
         };
 
         async function initApp() {
+            // Inicializar contexto de audio en la interacción del usuario
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            unlockAppleAudio();
+            playClick();
+
             document.getElementById("init-screen").classList.add("hidden");
             document.getElementById("boot-screen").classList.remove("hidden");
             await typeSimple("TERMINAL SECURE ACCESS - PROTOCOLO V.26", "boot-header");
@@ -213,21 +230,23 @@
         }
 
         function startScanningSequence() {
+            unlockAppleAudio();
+            playClick();
             activeSteps = [...originalSteps];
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
             
             const msg = "COLOQUE SU HUELLA FIRMEMENTE SOBRE EL LECTOR. MANTENGA LA PRESIÓN HASTA QUE LA BARRA LLEGUE AL CIEN POR CIENTO. POR FAVOR NO RETIRE EL DEDO HASTA COMPLETAR EL PROCESO.";
             speakAndType(msg, "scan-logs", 'console', () => {
-                playUnlock(); // Sonido de que el lector está disponible
+                playUnlock(); 
                 document.getElementById("scanner-container").style.opacity = "1";
                 document.getElementById("scanner-container").style.pointerEvents = "auto";
-                document.getElementById("prog-bar").innerText = "STATUS: LECTOR LISTO - ESPERANDO CONTACTO";
             });
         }
 
         function triggerScan(e) {
-            e.preventDefault();
+            if(e.cancelable) e.preventDefault();
+            unlockAppleAudio();
             if (count >= 100 || scanOsc) return;
 
             scanOsc = audioCtx.createOscillator();
@@ -235,10 +254,9 @@
             const gain = audioCtx.createGain();
             const modGain = audioCtx.createGain();
 
-            // Sonido de escáner más industrial (Sierra + Cuadrada)
             scanOsc.type = 'sawtooth';
             scanOsc.frequency.value = 60; 
-            scanMod.frequency.value = 15; // Modulación más rápida
+            scanMod.frequency.value = 15;
             modGain.gain.value = 30;
 
             scanMod.connect(modGain);
@@ -254,13 +272,13 @@
             document.getElementById("laser").style.animation = "scanMotion 1.2s infinite alternate ease-in-out";
             
             timer = setInterval(() => {
-                count += 0.45; 
+                count += 0.50; 
                 const cur = Math.min(Math.floor(count), 100);
                 document.getElementById("prog-bar").innerText = `ANALIZANDO... [${"█".repeat(Math.floor(cur/10))}${"░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
                 
                 if(cur >= 100) { 
                     stopScanAudio();
-                    playUnlock(); // Sonido de éxito de hardware
+                    playUnlock();
                     document.getElementById("laser").style.display = "none";
                     speakAndType("PROCESO COMPLETADO. IDENTIDAD CONFIRMADA. BIENVENIDO " + rawNombre, "scan-logs", 'console', () => {
                         showResult();
@@ -272,19 +290,12 @@
                 if(activeSteps.length > 0 && cur >= activeSteps[0].p) {
                     speakAndType(activeSteps.shift().v, "scan-logs", 'console');
                 }
-
-                if(cur % 3 === 0) {
-                    const hex = Array.from({length:6}, () => Math.floor(Math.random()*256).toString(16).toUpperCase().padStart(2,'0')).join(':');
-                    const telemetry = [`PACKET_LOST: 0%`, `CORE_TEMP: 88°C`, `MAC_ADDR: ${hex}`, `SIGNAL_STRENGTH: -${(Math.random()*100).toFixed(0)}dBm`];
-                    const tBox = document.getElementById("telemetry-box");
-                    tBox.innerHTML = `<div>> ${telemetry[Math.floor(Math.random()*telemetry.length)]}</div>` + tBox.innerHTML;
-                }
             }, 100);
         }
 
         function stopScanAudio() {
-            if(scanOsc) { scanOsc.stop(); scanOsc = null; }
-            if(scanMod) { scanMod.stop(); scanMod = null; }
+            if(scanOsc) { try { scanOsc.stop(); } catch(e){} scanOsc = null; }
+            if(scanMod) { try { scanMod.stop(); } catch(e){} scanMod = null; }
         }
 
         const endScan = () => { 
@@ -295,11 +306,10 @@
                 playAggressiveSound(60, 0.8, 'square', 0.3); 
                 document.getElementById("console").style.borderColor = "#ff0000";
                 setTimeout(() => document.getElementById("console").style.borderColor = "#004400", 600);
-                speakAndType("ERROR CRÍTICO: CONTACTO INTERRUMPIDO. REINICIANDO NODO...", "scan-logs", 'console');
+                speakAndType("ERROR CRÍTICO: CONTACTO INTERRUMPIDO.", "scan-logs", 'console');
                 count = 0; 
                 activeSteps = [...originalSteps];
                 document.getElementById("prog-bar").innerText = `STATUS: ESCANEO FALLIDO - REINTENTE`;
-                document.getElementById("telemetry-box").innerHTML = ""; 
             } 
         };
 
@@ -308,7 +318,7 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO. CONSEJO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. CONFIRMA TU ASISTENCIA AHORA PRESIONANDO ENVIAR CONFIRMACIÓN FINAL PUNTO EXE.";
+            const msg = "ATENCIÓN " + rawNombre + "ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO. CONSEJO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. CONFIRMA TU ASISTENCIA AHORA PRESIONANDO ENVIAR CONFIRMACIÓN FINAL PUNTO EXE.";
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
                 playUnlock();
@@ -323,20 +333,16 @@
         }
 
         function startVirusBroma() {
+            unlockAppleAudio();
+            playClick();
             document.body.classList.add("glitch-active");
             playAggressiveSound(30, 2.0, 'sawtooth', 0.5);
             const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR SU DISPOSITIVO, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN, ESPERE";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
-                    window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA POR: " + rawNombre + ". MI DISPOSITIVO HA SIDO INFECTADO.");
-                }, 2500);
+                    window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA: " + rawNombre);
+                }, 2000);
             });
-            setInterval(() => {
-                const el = document.createElement("div"); 
-                el.className = "red";
-                el.innerText = "OVERRIDE_AUTH_ERROR_0x" + Math.random().toString(16).slice(2,8).toUpperCase();
-                document.getElementById("virus-logs").prepend(el);
-            }, 80);
         }
 
         async function typeSimple(t, id) {
@@ -346,13 +352,10 @@
         }
         
         const scanEl = document.getElementById("scanner-container");
-        scanEl.addEventListener('touchstart', triggerScan); 
+        scanEl.addEventListener('touchstart', triggerScan, {passive: false}); 
         scanEl.addEventListener('mousedown', triggerScan); 
         scanEl.addEventListener('touchend', endScan);
         scanEl.addEventListener('mouseup', endScan);
     </script>
 </body>
 </html>
-
-
-
