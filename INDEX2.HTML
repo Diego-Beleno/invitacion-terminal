@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TERMINAL_DESINFECTION_PROTOCOL</title>
+    <style>
+        :root { --neon: #00ff41; --bg: #000a00; --white: #e0e0e0; --red: #ff0000; --dim-neon: #004400; }
+        
+        body::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 100; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        body { 
+            background: var(--bg); color: var(--neon); 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            padding: 10px; margin: 0; height: 100vh; overflow: hidden;
+            font-size: 11px; transition: background 0.3s;
+        }
+
+        #console { 
+            border: 2px solid var(--dim-neon); padding: 20px; height: 90vh; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: inset 0 0 50px #000; position: relative;
+        }
+
+        .line { margin-bottom: 10px; white-space: pre-wrap; text-transform: uppercase; text-align: center; }
+        .red { color: var(--red); font-weight: bold; text-shadow: 0 0 10px var(--red); }
+        
+        /* PIN Estilos */
+        .pin-container { display: flex; gap: 8px; margin: 30px 0; }
+        .pin-input {
+            width: 40px; height: 55px; background: #000; border: 2px solid var(--neon);
+            color: var(--neon); text-align: center; font-size: 24px; font-family: 'Consolas', monospace;
+            box-shadow: 0 0 10px var(--dim-neon);
+        }
+        .pin-input:focus { outline: none; border-color: #fff; box-shadow: 0 0 15px var(--neon); }
+
+        #status-msg { font-size: 12px; font-weight: bold; margin-top: 20px; height: 40px; }
+        
+        .bg-red { background: #400 !important; }
+        .bg-green { background: #030 !important; }
+        .glitch-active { animation: glitch 0.05s infinite; }
+        @keyframes glitch { 0% { transform: translate(1px, 0); } 50% { transform: translate(-1px, 1px); } 100% { transform: translate(0, -1px); } }
+
+        button { 
+            background: transparent; border: 1px solid var(--neon); color: var(--neon);
+            padding: 10px; cursor: pointer; font-family: 'Consolas'; margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="glitch-active bg-red">
+    <div id="console">
+        <div class="line red" style="font-size: 18px;">[ SISTEMA COMPROMETIDO ]</div>
+        <div id="terminal-text" class="line">PROTOCOLO DE DESINFECCIÓN REQUERIDO.<br>INGRESE EL CÓDIGO DE 6 DÍGITOS:</div>
+
+        <div class="pin-container">
+            <input type="number" class="pin-input" pattern="\d*" inputmode="numeric" maxlength="1" oninput="moveNext(this, 1)">
+            <input type="number" class="pin-input" pattern="\d*" inputmode="numeric" maxlength="1" oninput="moveNext(this, 2)">
+            <input type="number" class="pin-input" pattern="\d*" inputmode="numeric" maxlength="1" oninput="moveNext(this, 3)">
+            <input type="number" class="pin-input" pattern="\d*" inputmode="numeric" maxlength="1" oninput="moveNext(this, 4)">
+            <input type="number" class="pin-input" pattern="\d*" inputmode="numeric" maxlength="1" oninput="moveNext(this, 5)">
+            <input type="number" class="pin-input" pattern="\d*" inputmode="numeric" maxlength="1" oninput="validatePin()">
+        </div>
+
+        <div id="status-msg" class="red">ESPERANDO CÓDIGO...</div>
+        
+        <button onclick="initAudio()">> ACTIVAR_VOZ_Y_AUDIO</button>
+        <div style="font-size: 8px; margin-top: 40px; opacity: 0.5;">SECURE_DECRYPT_V26 - DIEGO BELEÑO</div>
+    </div>
+
+    <script>
+        let audioCtx;
+        const CORRECT_PIN = "070207";
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawNombre = (urlParams.get('nombre') || "USUARIO");
+
+        function initAudio() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const msg = "SISTEMA BLOQUEADO. " + rawNombre + ", INGRESE EL PIN DE SEIS DÍGITOS PARA ELIMINAR EL VIRUS.";
+            speak(msg);
+            event.target.style.display = 'none';
+        }
+
+        function playSound(freq, duration, type='sawtooth', vol=0.1) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-MX';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function moveNext(el, nextIndex) {
+            if (el.value.length >= 1) {
+                el.value = el.value.slice(0, 1);
+                document.querySelectorAll('.pin-input')[nextIndex].focus();
+                playSound(400, 0.05, 'sine');
+            }
+        }
+
+        function validatePin() {
+            const inputs = document.querySelectorAll('.pin-input');
+            let pin = "";
+            inputs.forEach(input => pin += input.value);
+
+            if (pin.length === 6) {
+                if (pin === CORRECT_PIN) {
+                    // ÉXITO
+                    document.body.classList.remove("glitch-active", "bg-red");
+                    document.body.classList.add("bg-green");
+                    document.getElementById("status-msg").innerText = "DESINFECCIÓN COMPLETADA";
+                    document.getElementById("status-msg").style.color = "var(--neon)";
+                    playSound(880, 0.1, 'square');
+                    setTimeout(() => playSound(1760, 0.2, 'square'), 100);
+                    
+                    const msg = "PIN CORRECTO. VIRUS BORRADO. BIENVENIDO A LA RESIDENCIA DE DIEGO.";
+                    speak(msg);
+                } else {
+                    // ERROR
+                    playSound(100, 0.5, 'sawtooth', 0.2);
+                    document.getElementById("status-msg").innerText = "PIN INCORRECTO. SU DISPOSITIVO SIGUE INFECTADO.";
+                    speak("PIN INCORRECTO. SU DISPOSITIVO SIGUE INFECTADO.");
+                    
+                    // Limpiar
+                    inputs.forEach(input => input.value = "");
+                    inputs[0].focus();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
