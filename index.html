@@ -51,9 +51,16 @@
         <div id="init-screen">
             <div id="init-logs"></div>
             <div class="centered-ui">
-                <div class="line red" style="font-size: 15px;">[!] ATENCIÓN: PROTOCOLO DE AUDIO ANALÓGICO [!]</div>
+                <div id="init-msg" class="line red" style="font-size: 15px;">[!] ATENCIÓN: PROTOCOLO DE AUDIO ANALÓGICO [!]</div>
                 <div class="line" style="color:#fff; border: 1px solid #fff; padding: 8px; margin: 10px 0;">SUBA EL VOLUMEN AL 100% PARA VALIDACIÓN SÓNICA</div>
                 <button id="btn-init" class="hidden" onclick="initApp()">> EJECUTAR_ACCESO_SISTEMA.EXE</button>
+            </div>
+        </div>
+
+        <div id="qr-result-screen" class="hidden">
+            <div id="qr-logs" style="height: 250px; overflow: hidden; padding: 10px;"></div>
+            <div class="centered-ui">
+                <button onclick="location.href='https://diego-beleno.github.io/invitacion-terminal/'">VOLVER AL INICIO</button>
             </div>
         </div>
 
@@ -90,11 +97,12 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const rawNombre = (urlParams.get('nombre') || "USUARIO_DESCONOCIDO");
+        const scanID = urlParams.get('scan'); 
         let audioCtx, scanOsc, timer, count = 0;
 
         function playAggressiveSound(freq, duration, type='sawtooth', vol=0.08) {
             if(!audioCtx) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             const noise = audioCtx.createOscillator();
@@ -116,42 +124,42 @@
         }
 
         function speakAndType(text, targetId, prompt, callback) {
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             const el = document.createElement("div");
             el.className = "line " + (prompt === 'user' ? 'prompt-user' : 'prompt-console');
             document.getElementById(targetId).appendChild(el);
-            if(prompt === 'user') el.innerHTML = "> ";
             
             const words = text.split("");
             let i = 0;
-            const speed = 35;
-
             const typeInterval = setInterval(() => {
                 if(i < words.length) {
                     el.innerHTML += words[i];
                     playAggressiveSound(120 + (Math.random()*220), 0.03, 'sawtooth', 0.02);
                     i++;
                 } else { clearInterval(typeInterval); }
-            }, speed);
+            }, 35);
 
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'es-MX'; utterance.rate = 1.0; utterance.pitch = 0.5;
             utterance.onend = () => { 
                 clearInterval(typeInterval); 
-                el.innerHTML = (prompt === 'user' ? "> " : "") + text;
+                el.innerHTML = text;
                 if(callback) callback(); 
             };
-            window.speechSynthesis.cancel(); // LIMPIAR COLA SAFARI
+            window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
         }
 
         window.onload = async () => {
+            if(scanID) {
+                document.getElementById("init-msg").innerText = "[!] SISTEMA DE DESINFECCIÓN DETECTADO [!]";
+                document.getElementById("btn-init").innerText = "> VALIDAR_CODIGO_QR.EXE";
+            }
+
             const boot = [
                 "SYSTEM_CORE_V13_STABLE", "DMA_ADDRESS: 0x00F221", "DRIVE_C: MOUNTED",
                 "VOLTAGE_RAILS: 5.02V [STABLE]", "BIOS_DATE: 02/02/2026",
-                "BIOMETRIC_SENSOR_V8: READY", "HEART_RATE_MONITOR: ACTIVE",
-                "PULSE_OXY_SCANNER: ONLINE", "CRYPTO_KEY_4096: LOADED",
-                "MEM_DUMP: 0x0021FF - 0x00AF12", "AUTHOR: DIEGO BELEÑO", "STATUS: SYSTEM_READY"
+                "BIOMETRIC_SENSOR_V8: READY", "AUTHOR: DIEGO BELEÑO", "STATUS: SYSTEM_READY"
             ];
             for(let l of boot) {
                 const d = document.createElement("div"); d.innerText = l;
@@ -163,16 +171,39 @@
 
         async function initApp() {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') await audioCtx.resume(); // SOPORTE SAFARI
-            
-            playAggressiveSound(600, 0.2, 'square', 0.15);
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
             document.getElementById("init-screen").classList.add("hidden");
-            document.getElementById("boot-screen").classList.remove("hidden");
-            
-            await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045.6456]", "boot-header");
+
+            if(scanID) {
+                runQRLogic();
+            } else {
+                document.getElementById("boot-screen").classList.remove("hidden");
+                startInvitationFlow();
+            }
+        }
+
+        function runQRLogic() {
+            document.getElementById("qr-result-screen").classList.remove("hidden");
+            const logContainer = document.getElementById("qr-logs");
+
+            if(scanID === "EXIT_CODE") {
+                document.body.style.background = "#002200";
+                speakAndType("FELICIDADES, TE HAS DESINFECTADO. TUS DATOS ESTÁN A SALVO. PUEDES VOLVER A LA CELEBRACIÓN.", "qr-logs", 'console');
+                logContainer.innerHTML += "<h1 class='line' style='margin-top:20px'>[ ACCESO CONCEDIDO ]</h1>";
+                playAggressiveSound(800, 0.5, 'sine', 0.1);
+            } else {
+                document.body.classList.add("glitch-active");
+                speakAndType("ERROR. ACCESO DENEGADO. EL VIRUS SIGUE ACTIVO EN TU SISTEMA. SIGUE BUSCANDO.", "qr-logs", 'console');
+                logContainer.innerHTML += "<h1 class='line red' style='margin-top:20px'>[ ERROR CRÍTICO: " + scanID + " ]</h1>";
+                playAggressiveSound(50, 1, 'sawtooth', 0.3);
+            }
+        }
+
+        async function startInvitationFlow() {
+            await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045]", "boot-header");
             await typeSimple("PROGRAMADO POR: DIEGO BELEÑO", "boot-header");
             
-            const msg = "SISTEMA DE SEGURIDAD INICIALIZADO. PARA CONTINUAR CON EL PROTOCOLO CORPORATIVO, DIEGO NECESITA RECIBIR SUS DATOS BIOMÉTRICOS. POR FAVOR, ASEGÚRESE DE TENER EL VOLUMEN AL MÁXIMO Y PRESIONE EN INICIALIZAR BIOMETRIC SCAN PUNTO EXE.";
+            const msg = "SISTEMA DE SEGURIDAD INICIALIZADO. PARA CONTINUAR CON EL PROTOCOLO, DIEGO NECESITA RECIBIR SUS DATOS BIOMÉTRICOS. POR FAVOR, PRESIONE EN INICIALIZAR BIOMETRIC SCAN.";
             speakAndType(msg, "boot-logs", 'user', () => { 
                 playAggressiveSound(900, 0.1, 'square');
                 document.getElementById("btn-start-scan").disabled = false; 
@@ -180,14 +211,12 @@
         }
 
         async function startScanningSequence() {
-            if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume(); // SOPORTE SAFARI
             playAggressiveSound(200, 0.1, 'sawtooth');
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
             
-            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE LA MATRIZ DE PUNTOS. NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA VASCULAR Y RECOLECTA LOS DATOS PARA DIEGO.";
+            const msg = "PROCEDIMIENTO DE CAPTURA. COLOQUE SU DEDO PULGAR FIRMEMENTE. NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA VASCULAR.";
             speakAndType(msg, "scan-logs", 'console', () => {
-                playAggressiveSound(1000, 0.2, 'square');
                 document.getElementById("scanner-container").style.opacity = "1";
                 document.getElementById("scanner-container").style.pointerEvents = "auto";
             });
@@ -195,7 +224,6 @@
 
         function triggerScan(e) {
             e.preventDefault();
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
             playAggressiveSound(150, 0.1, 'sawtooth');
             scanOsc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -207,44 +235,41 @@
             document.getElementById("laser").style.animation = "scanMotion 1.5s infinite alternate linear";
             
             const steps = [
-                {p: 5, v: "ESCANEANDO HUELLA DACTILAR."},
-                {p: 25, v: "EXTRAYENDO DATOS DEL SUJETO."},
-                {p: 50, v: "ASIGNANDO BLOQUE DE INFORMACIÓN EN LA BASE DE DATOS."},
-                {p: 75, v: "BORRANDO TIKTOK DEL DISPOSITIVO."},
-                {p: 90, v: "FINALIZANDO CARGA. NO RETIRE LA HUELLA."}
+                {p: 20, v: "EXTRAYENDO ADN..."},
+                {p: 50, v: "MIRANDO TUS FOTOS DE LA GALERÍA..."},
+                {p: 80, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."}
             ];
 
             timer = setInterval(() => {
-                if(count >= 99) return;
-                count += 0.55;
+                count += 0.6;
                 const cur = Math.floor(count);
-                document.getElementById("prog-bar").innerText = `CAPTURANDO... [${"█".repeat(Math.floor(cur/10))}${ "░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
+                if(cur > 100) return;
+
+                document.getElementById("prog-bar").innerText = `CAPTURANDO... [${"█".repeat(Math.floor(cur/10))}${"░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
 
                 if(steps.length > 0 && cur >= steps[0].p) {
-                    const s = steps.shift();
-                    speakAndType(s.v, "scan-logs", 'console');
+                    speakAndType(steps.shift().v, "scan-logs", 'console');
                 }
 
-                if(cur % 4 === 0) {
+                if(cur % 5 === 0) {
                     const stats = ["PULSE: " + (72+Math.random()*15).toFixed(0) + "BPM", "SPO2: 99%", "DNA: VALID"];
                     document.getElementById("telemetry-box").innerHTML = stats[Math.floor(Math.random()*stats.length)] + "<br>" + document.getElementById("telemetry-box").innerHTML;
                 }
 
-                if(cur >= 98) {
-                    clearInterval(timer);
+                if(count >= 100) {
+                    clearInterval(timer); scanOsc.stop();
                     speakAndType("BIENVENIDO " + rawNombre + ". ACCESO CONCEDIDO.", "scan-logs", 'console', showResult);
                 }
             }, 80);
         }
 
         async function showResult() {
-            if(scanOsc) scanOsc.stop();
             playAggressiveSound(1100, 0.4, 'square', 0.2);
             document.getElementById("scan-screen").classList.add("hidden");
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO A MI CUMPLEAÑOS ESTE 7 DE FEBRERO A LAS 18 HORAS EN MI CASA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR MI ESTILO. TIPS: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. RECUERDA SEGUIR LOS PASOS EL DÍA DE LA REUNIÓN. CONFIRMA AHORA.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO A MI CUMPLEAÑOS ESTE 7 DE FEBRERO A LAS 18 HORAS EN MI CASA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR MI ESTILO. USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS SOBRE OTRAS DE MANGA LARGA. CONFIRMA AHORA.";
             
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
@@ -252,10 +277,10 @@
 
             document.getElementById("final-text-area").innerHTML += `
                 <div class="line" style="color:#fff; border:1px solid #00ff41; padding:6px; margin-top:10px; background: rgba(0,30,0,0.5);">
-                [CÓDIGO_VESTIMENTA_DIEGO]:<br>
-                - PANTALONES ANCHOS (BAGGY)<br>
+                [ESTILO_DIEGO_V1.0]:<br>
+                - PANTALONES BAGGY / ANCHOS<br>
                 - ZAPATOS BLANCOS<br>
-                - GORRA (REQUERIDO)<br>
+                - GORRA (OBLIGATORIO)<br>
                 - CAMISETA SOBRE MANGA LARGA
                 </div>
             `;
@@ -270,17 +295,17 @@
         }
 
         function startVirusBroma() {
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
             playAggressiveSound(40, 0.8, 'sawtooth', 0.3);
             document.body.classList.add("glitch-active");
-            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS, PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN EN MI CASA. CONFÍRMAME POR WHATSAPP AHORA.";
+            const msg = "VIRUS DESCARGADO. DATOS COMPROMETIDOS. PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN. CONFÍRMAME POR WHATSAPP AHORA.";
             speakAndType(msg, "virus-logs", 'console', () => {
-                window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("SYSTEM_CRITICAL: " + rawNombre + " HA SIDO INFECTADO.");
+                setTimeout(() => {
+                    window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("SYSTEM_CRITICAL: " + rawNombre + " HA SIDO INFECTADO.");
+                }, 2000);
             });
             setInterval(() => {
                 const el = document.createElement("div"); el.innerText = "S̸Y̸S̸_E̸R̸R̸O̸R̸_0x" + Math.random().toString(16).slice(2,6).toUpperCase();
                 document.getElementById("virus-logs").prepend(el);
-                playAggressiveSound(40 + Math.random()*20, 0.05, 'square', 0.1);
             }, 100);
         }
 
@@ -295,7 +320,7 @@
         }
 
         const scanEl = document.getElementById("scanner-container");
-        scanEl.addEventListener('touchstart', triggerScan); 
+        scanEl.addEventListener('touchstart', triggerScan);
         scanEl.addEventListener('touchend', () => { if(count < 100) { clearInterval(timer); if(scanOsc) scanOsc.stop(); document.getElementById("laser").style.display = "none"; } });
     </script>
 </body>
