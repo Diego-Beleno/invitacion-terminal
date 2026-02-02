@@ -127,7 +127,8 @@
             {p: 0, v: "ESCANEANDO HUELLA DIGITAL..."},
             {p: 15, v: "MIDIENDO PULSO CARDIACO..."},
             {p: 25, v: "ENVIANDO INFROMACIÓN A LA BASE DE DATOS..."},
-            {p: 35, v: "GUARDANDO DATOS DE USUARIO..."},
+            {p: 40, v: "GUARDANDO DATOS DE USUARIO..."},
+            {p: 50, v: "GUARDANDO DATOS DE USUARIO..."},
             {p: 85, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."},
             {p: 98, v: "ACCESO CONCEDIDO CON ÉXITO."}
         ];
@@ -307,7 +308,7 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO. CONSEJO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. CONFIRMA TU ASISTENCIA AHORA PRESIONANDO ENVIAR_CONFIRMACIÓN_FINAL.EXE.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 PM EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO. CONSEJO: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. CONFIRMA TU ASISTENCIA AHORA PRESIONANDO ENVIAR CONFIRMACIÓN FINAL PUNTO EXE.";
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
                 playUnlock();
@@ -352,3 +353,4 @@
     </script>
 </body>
 </html>
+
