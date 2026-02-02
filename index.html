@@ -51,8 +51,8 @@
         <div id="init-screen">
             <div id="init-logs"></div>
             <div class="centered-ui">
-                <div class="line red" style="font-size: 15px;">[!] ATENCIÓN: PROTOCOLO DE AUDIO ANALÓGICO [!]</div>
-                <div class="line" style="color:#fff; border: 1px solid #fff; padding: 8px; margin: 10px 0;">SUBA EL VOLUMEN AL 100% PARA VALIDACIÓN SÓNICA</div>
+                <div class="line red" style="font-size: 15px;">[!] ATENCIÓN: PROTOCOLO DE INSTRUCCIONES VÍA AUDIO [!]</div>
+                <div class="line" style="color:#fff; border: 1px solid #fff; padding: 8px; margin: 10px 0;">SUBA EL VOLUMEN AL 100% PARA RECIBIR LAS INSTRUCCIONES</div>
                 <button id="btn-init" class="hidden" onclick="initApp()">> EJECUTAR_ACCESO_SISTEMA.EXE</button>
             </div>
         </div>
@@ -68,7 +68,7 @@
         <div id="scan-screen" class="hidden">
             <div id="scan-logs" style="height: 140px; overflow: hidden; font-size: 11px; border-bottom: 1px solid #003300;"></div>
             <div class="centered-ui">
-                <div id="prog-bar">ESPERANDO CONTACTO [░░░░░░░░░░] 0%</div>
+                <div id="prog-bar">ESPERANDO CONTACTO... [░░░░░░░░░░] 0%</div>
                 <div id="scanner-container">
                     <div id="laser"></div>
                     <div id="scanner-dots">::::<br>::::<br>::::<br>::::</div>
@@ -172,7 +172,7 @@
             await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045.6456]", "boot-header");
             await typeSimple("PROGRAMADO POR: DIEGO BELEÑO", "boot-header");
             
-            const msg = "SISTEMA DE SEGURIDAD INICIALIZADO. PARA CONTINUAR CON EL PROTOCOLO CORPORATIVO, DIEGO NECESITA RECIBIR SUS DATOS BIOMÉTRICOS. POR FAVOR, ASEGÚRESE DE TENER EL VOLUMEN AL MÁXIMO Y PRESIONE EN INICIALIZAR BIOMETRIC SCAN PUNTO EXE.";
+            const msg = "SISTEMA DE SEGURIDAD INICIALIZADO CON ÉXITO. PARA CONTINUAR CON EL PROTOCOLO DE REGISTRO EN LA BASE DE DATOS, DIEGO... BUENO, NOSOTROS NECESITAMOS RECIBIR SUS DATOS BIOMÉTRICOS. POR FAVOR, ASEGÚRESE DE TENER EL VOLUMEN AL MÁXIMO Y PRESIONE EN INICIALIZAR BIOMETRIC SCAN PUNTO EXE PARA CONTINUAR.";
             speakAndType(msg, "boot-logs", 'user', () => { 
                 playAggressiveSound(900, 0.1, 'square');
                 document.getElementById("btn-start-scan").disabled = false; 
@@ -185,7 +185,7 @@
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
             
-            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE LA MATRIZ DE PUNTOS. NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA VASCULAR Y RECOLECTA LOS DATOS PARA DIEGO.";
+            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE EL LADRÓN DE DATOS, DIGO... EL LECTOR DE HUELLAS. PORFAVOR NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA Y RECOLECTA LOS DATOS PARA NOSOTROS, OBEDEZCA LAS INSTRUCCIONES.";
             speakAndType(msg, "scan-logs", 'console', () => {
                 playAggressiveSound(1000, 0.2, 'square');
                 document.getElementById("scanner-container").style.opacity = "1";
@@ -207,10 +207,10 @@
             document.getElementById("laser").style.animation = "scanMotion 1.5s infinite alternate linear";
             
             const steps = [
-                {p: 5, v: "ESCANEANDO HUELLA DACTILAR."},
-                {p: 25, v: "EXTRAYENDO DATOS DEL SUJETO."},
-                {p: 50, v: "ASIGNANDO BLOQUE DE INFORMACIÓN EN LA BASE DE DATOS."},
-                {p: 75, v: "BORRANDO TIKTOK DEL DISPOSITIVO."},
+                {p: 5, v: "ESCANEANDO HUELLA DACTILAR..."},
+                {p: 25, v: "EXTRAYENDO DATOS DEL SUJETO..."},
+                {p: 50, v: "ASIGNANDO BLOQUE DE INFORMACIÓN EN LA BASE DE DATOS..."},
+                {p: 75, v: "BORRANDO TIKTOK DEL DISPOSITIVO..."},
                 {p: 90, v: "FINALIZANDO CARGA. NO RETIRE LA HUELLA."}
             ];
 
@@ -224,17 +224,26 @@
                     const s = steps.shift();
                     speakAndType(s.v, "scan-logs", 'console');
                 }
-
-                if(cur % 4 === 0) {
-                    const stats = ["PULSE: " + (72+Math.random()*15).toFixed(0) + "BPM", "SPO2: 99%", "DNA: VALID"];
-                    document.getElementById("telemetry-box").innerHTML = stats[Math.floor(Math.random()*stats.length)] + "<br>" + document.getElementById("telemetry-box").innerHTML;
-                }
-
-                if(cur >= 98) {
-                    clearInterval(timer);
-                    speakAndType("BIENVENIDO " + rawNombre + ". ACCESO CONCEDIDO.", "scan-logs", 'console', showResult);
-                }
-            }, 80);
+if(cur % 4 === 0) {
+    const stats = [
+        "PULSE: " + (72 + Math.random() * 15).toFixed(0) + " BPM",
+        "SPO2: " + (97 + Math.random() * 3).toFixed(0) + "%",
+        "DERMAL_TEMP: " + (35.8 + Math.random() * 1.2).toFixed(1) + "°C",
+        "PATTERN: " + ["ARCH", "LOOP", "WHORL", "ACCIDENTAL"][Math.floor(Math.random() * 4)],
+        "RIDGE_DENSITY: " + (12 + Math.random() * 5).toFixed(1) + " lines/mm",
+        "MINUTIAE_POINTS: " + (40 + Math.random() * 20).toFixed(0) + " DETECTED",
+        "MOISTURE_LEVEL: " + (20 + Math.random() * 10).toFixed(1) + "%",
+        "MATCH_CONFIDENCE: " + (85 + Math.random() * 14).toFixed(2) + "%",
+        "VASCULAR_MAP: VERIFIED",
+        "EPIDERMAL_THICKNESS: " + (0.4 + Math.random() * 0.2).toFixed(2) + "mm"
+    ];
+    
+    // Elegimos un dato al azar para imprimir en cada ciclo
+    const randomStat = stats[Math.floor(Math.random() * stats.length)];
+    document.getElementById("telemetry-box").innerHTML = 
+        `<div class="line">[SCAN_DATA] ${randomStat}</div>` + 
+        document.getElementById("telemetry-box").innerHTML;
+}
         }
 
         async function showResult() {
@@ -244,7 +253,7 @@
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
             
-            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO A MI CUMPLEAÑOS ESTE 7 DE FEBRERO A LAS 18 HORAS EN MI CASA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR MI ESTILO. TIPS: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. RECUERDA SEGUIR LOS PASOS EL DÍA DE LA REUNIÓN. CONFIRMA AHORA.";
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 DE LA TARDE EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR SU ESTILO. TIPS: USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS MANGA LARGA. CONFIRMA AHORA PRESIONANDO CONFIRMAR_ASISTENCIA.EXE.";
             
             speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
@@ -252,7 +261,7 @@
 
             document.getElementById("final-text-area").innerHTML += `
                 <div class="line" style="color:#fff; border:1px solid #00ff41; padding:6px; margin-top:10px; background: rgba(0,30,0,0.5);">
-                [CÓDIGO_VESTIMENTA_DIEGO]:<br>
+                [DRESS CODE]:<br>
                 - PANTALONES ANCHOS (BAGGY)<br>
                 - ZAPATOS BLANCOS<br>
                 - GORRA (REQUERIDO)<br>
@@ -273,7 +282,7 @@
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
             playAggressiveSound(40, 0.8, 'sawtooth', 0.3);
             document.body.classList.add("glitch-active");
-            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS, PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN EN MI CASA. CONFÍRMAME POR WHATSAPP AHORA.";
+            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS, PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN. CONFÍRMA TU ASISTENCIA POR WHATSAPP AHORA.";
             speakAndType(msg, "virus-logs", 'console', () => {
                 window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("SYSTEM_CRITICAL: " + rawNombre + " HA SIDO INFECTADO.");
             });
@@ -300,3 +309,4 @@
     </script>
 </body>
 </html>
+
