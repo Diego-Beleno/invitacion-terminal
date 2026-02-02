@@ -92,7 +92,6 @@
         const rawNombre = (urlParams.get('nombre') || "USUARIO_DESCONOCIDO");
         let audioCtx, scanOsc, timer, count = 0;
         
-        // Copia de respaldo de los pasos para poder reiniciarlos
         let activeSteps = [];
         const originalSteps = [
             {p: 0, v: "ESCANEANDO HUELLA DACTILAR..."},
@@ -104,23 +103,14 @@
 
         function playAggressiveSound(freq, duration, type='sawtooth', vol=0.08) {
             if(!audioCtx) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            const noise = audioCtx.createOscillator();
-            const noiseGain = audioCtx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            noise.type = 'square';
-            noise.frequency.setValueAtTime(freq * 1.5, audioCtx.currentTime);
-            noiseGain.gain.setValueAtTime(vol * 0.5, audioCtx.currentTime);
             gain.gain.setValueAtTime(vol, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
-            osc.connect(gain); noise.connect(noiseGain); noiseGain.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(); noise.start();
-            osc.stop(audioCtx.currentTime + duration);
-            noise.stop(audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
 
         function speakAndType(text, targetId, prompt, callback) {
@@ -133,13 +123,13 @@
             const typeInterval = setInterval(() => {
                 if(i < text.length) {
                     el.innerHTML = (prompt === 'user' ? "> " : "") + text.substring(0, i+1);
-                    playAggressiveSound(120 + (Math.random()*220), 0.03, 'sawtooth', 0.02);
+                    playAggressiveSound(150 + (Math.random()*100), 0.03, 'sawtooth', 0.02);
                     i++;
                 } else { clearInterval(typeInterval); }
-            }, 35);
+            }, 30);
 
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'es-MX'; utterance.rate = 1.0; utterance.pitch = 0.5;
+            utterance.lang = 'es-MX'; utterance.rate = 1.1; utterance.pitch = 0.5;
             utterance.onend = () => { 
                 clearInterval(typeInterval); 
                 el.innerHTML = (prompt === 'user' ? "> " : "") + text;
@@ -150,7 +140,7 @@
         }
 
         window.onload = async () => {
-            const boot = ["SYSTEM_CORE_V13_STABLE", "DMA_ADDRESS: 0x00F221", "BIOS_DATE: 02/02/2026", "AUTHOR: DIEGO BELEÑO", "STATUS: SYSTEM_READY"];
+            const boot = ["SYSTEM_CORE_V13_STABLE", "DMA_ADDRESS: 0x00F221", "AUTHOR: DIEGO BELEÑO", "STATUS: SYSTEM_READY"];
             for(let l of boot) {
                 const d = document.createElement("div"); d.innerText = l;
                 document.getElementById("init-logs").appendChild(d);
@@ -164,16 +154,20 @@
             document.getElementById("init-screen").classList.add("hidden");
             document.getElementById("boot-screen").classList.remove("hidden");
             await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045]", "boot-header");
-            speakAndType("SISTEMA DE SEGURIDAD LISTO. INICIALICE EL ESCÁNER BIOMÉTRICO.", "boot-logs", 'user', () => { 
+            
+            const msg = "SISTEMA DE SEGURIDAD LISTO. NECESITAMOS SUS DATOS BIOMÉTRICOS. SE LE REALIZARÁ UN ESCÁNER DIGITAL PARA VERIFICAR SU IDENTIDAD. PARA CONTINUAR PRESIONE EL BOTÓN INICIALIZAR BIOMETRIC SCAN PUNTO EXE.";
+            speakAndType(msg, "boot-logs", 'user', () => { 
                 document.getElementById("btn-start-scan").disabled = false; 
             });
         }
 
         function startScanningSequence() {
-            activeSteps = [...originalSteps]; // Cargamos los mensajes
+            activeSteps = [...originalSteps];
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
-            speakAndType("COLOQUE SU DEDO FIRMEMENTE. NO RETIRE LA HUELLA.", "scan-logs", 'console', () => {
+            
+            const msg = "INICIALIZANDO SISTEMA DE ESCANEO. INSTRUCCIONES: COLOQUE SU HUELLA FIRMEMENTE SOBRE EL LECTOR PARA QUE EL SISTEMA RECOLECTE SUS DATOS. NO QUITE LA HUELLA BAJO NINGUNA CIRCUNSTANCIA O EL PROTOCOLO SE REINICIARÁ.";
+            speakAndType(msg, "scan-logs", 'console', () => {
                 document.getElementById("scanner-container").style.opacity = "1";
                 document.getElementById("scanner-container").style.pointerEvents = "auto";
             });
@@ -182,7 +176,6 @@
         function triggerScan(e) {
             e.preventDefault();
             if (count >= 100) return;
-            playAggressiveSound(150, 0.1, 'sawtooth');
             scanOsc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             scanOsc.type = 'sawtooth'; scanOsc.frequency.value = 45;
@@ -195,16 +188,18 @@
                 count += 0.55;
                 const cur = Math.floor(count);
                 if(cur >= 100) { 
-                    clearInterval(timer); scanOsc.stop(); showResult(); return; 
+                    clearInterval(timer); scanOsc.stop(); 
+                    speakAndType("YA PUEDES RETIRAR LA HUELLA. ACCESO CONCEDIDO. BIENVENIDO " + rawNombre, "scan-logs", 'console', () => {
+                        showResult();
+                    });
+                    return; 
                 }
                 document.getElementById("prog-bar").innerText = `CAPTURANDO... [${"█".repeat(Math.floor(cur/10))}${ "░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
-
                 if(activeSteps.length > 0 && cur >= activeSteps[0].p) {
                     speakAndType(activeSteps.shift().v, "scan-logs", 'console');
                 }
-
                 if(cur % 4 === 0) {
-                    const stats = ["PULSE: " + (72 + Math.random() * 15).toFixed(0) + " BPM", "MATCH: " + (85 + Math.random() * 14).toFixed(2) + "%"];
+                    const stats = ["MATCH: " + (85 + Math.random() * 14).toFixed(2) + "%", "DNA: VERIFIED"];
                     document.getElementById("telemetry-box").innerHTML = `<div class="line">[SCAN_DATA] ${stats[Math.floor(Math.random()*stats.length)]}</div>` + document.getElementById("telemetry-box").innerHTML;
                 }
             }, 80);
@@ -215,18 +210,12 @@
                 clearInterval(timer); 
                 if(scanOsc) scanOsc.stop(); 
                 document.getElementById("laser").style.display = "none"; 
-                
-                // Lógica de Error Grave
                 playAggressiveSound(50, 0.4, 'sawtooth', 0.2); 
-                const consoleEl = document.getElementById("console");
-                consoleEl.style.borderColor = "#ff0000";
-                setTimeout(() => consoleEl.style.borderColor = "#004400", 500);
-
+                document.getElementById("console").style.borderColor = "#ff0000";
+                setTimeout(() => document.getElementById("console").style.borderColor = "#004400", 500);
                 speakAndType("ERROR: CONTACTO INTERRUMPIDO. REINICIANDO PROTOCOLO...", "scan-logs", 'console');
-
-                // Reinicio de sistema
                 count = 0; 
-                activeSteps = [...originalSteps]; // Reiniciamos los mensajes para el siguiente intento
+                activeSteps = [...originalSteps];
                 document.getElementById("prog-bar").innerText = `ESPERANDO CONTACTO... [░░░░░░░░░░] 0%`;
                 document.getElementById("telemetry-box").innerHTML = ""; 
             } 
@@ -236,7 +225,9 @@
             document.getElementById("scan-screen").classList.add("hidden");
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
-            speakAndType("BIENVENIDO " + rawNombre + ". DIEGO TE INVITA A SU CUMPLEAÑOS EL 7 DE FEBRERO. CONFIRMA ASISTENCIA.", "final-text-area", 'console', () => {
+            
+            const msg = "ATENCIÓN " + rawNombre + ". ESTÁS INVITADO AL CUMPLEAÑOS DE DIEGO ESTE SÁBADO 7 DE FEBRERO A LAS 6 DE LA TARDE EN SU RESIDENCIA. EL CÓDIGO DE VESTIMENTA ES OBLIGATORIO: DEBES COPIAR SU ESTILO. USA PANTALONES ANCHOS, ZAPATOS BLANCOS, GORRAS Y CAMISETAS ENCIMA DE OTRAS CAMISETAS. CONFIRMA PRESIONANDO EL BOTÓN CONFIRMAR ASISTENCIA PUNTO EXE.";
+            speakAndType(msg, "final-text-area", 'console', () => {
                 document.getElementById("btn-conf").disabled = false;
             });
             setInterval(updateClock, 1000);
@@ -250,7 +241,17 @@
 
         function startVirusBroma() {
             document.body.classList.add("glitch-active");
-            window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA POR: " + rawNombre);
+            playAggressiveSound(40, 1.0, 'sawtooth', 0.3);
+            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS. PARA DESINFECTAR TU DISPOSITIVO DEBES SEGUIR LAS INSTRUCCIONES EL DÍA DE LA REUNIÓN. AHORA, CONFIRMA TU ASISTENCIA VÍA WHATSAPP.";
+            speakAndType(msg, "virus-logs", 'console', () => {
+                setTimeout(() => {
+                    window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA POR: " + rawNombre + ". DISPOSITIVO INFECTADO.");
+                }, 1500);
+            });
+            setInterval(() => {
+                const el = document.createElement("div"); el.innerText = "FATAL_ERROR_0x" + Math.random().toString(16).slice(2,6).toUpperCase();
+                document.getElementById("virus-logs").prepend(el);
+            }, 100);
         }
 
         async function typeSimple(t, id) {
