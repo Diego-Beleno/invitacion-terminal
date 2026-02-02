@@ -24,7 +24,6 @@
             font-family: 'Consolas', 'Courier New', monospace; 
             padding: 10px; margin: 0; height: 100vh; overflow: hidden;
             font-size: 11px; line-height: 1.1;
-            transition: background 0.3s;
         }
 
         #console { 
@@ -66,6 +65,7 @@
         button:active { transform: translate(2px, 2px); box-shadow: none; }
         button:disabled { border-color: #003300; color: #003300; opacity: 0.4; }
         
+        /* Botón especial para saltar audio */
         .btn-skip {
             background: transparent; border: 1px dashed var(--neon); color: var(--neon);
             font-size: 9px; padding: 5px 10px; margin-top: 5px; opacity: 0.7;
@@ -80,24 +80,12 @@
 
         #countdown { font-size: 1.4em; color: #fff; border: 2px solid var(--red); padding: 10px; margin: 10px 0; background: rgba(40,0,0,0.5); text-align: center; font-weight: bold; }
         
-        /* PIN Estilos */
-        .pin-container { display: flex; gap: 8px; margin: 20px 0; }
-        .pin-input {
-            width: 35px; height: 45px; background: #000; border: 2px solid var(--neon);
-            color: var(--neon); text-align: center; font-size: 20px; font-family: 'Consolas', monospace;
-            box-shadow: 0 0 10px var(--dim-neon);
-        }
-        .pin-input:focus { outline: none; border-color: #fff; box-shadow: 0 0 15px var(--neon); }
-
         .footer-info { font-size: 10px; color: var(--neon); margin-top: 10px; text-align: center; border-top: 1px dashed var(--dim-neon); width: 100%; padding-top: 10px; }
+
         .hidden { display: none; }
         @keyframes scanMotion { 0% { top: 0%; } 100% { top: 100%; } }
-        .glitch-active { animation: glitch 0.05s infinite; }
+        .glitch-active { animation: glitch 0.05s infinite; background: #200 !important; }
         @keyframes glitch { 0% { transform: translate(2px, 0); } 50% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); } 100% { transform: translate(0, -1px); } }
-        
-        /* Estados de pantalla */
-        .bg-red { background: #400 !important; color: #ff0000 !important; }
-        .bg-green { background: #030 !important; color: #00ff41 !important; }
     </style>
 </head>
 <body>
@@ -152,21 +140,6 @@
             <div id="virus-logs" class="red" style="margin-top:15px; font-size: 10px;"></div>
             <div class="footer-info" style="color: #ff0000; border-color: #ff0000;">© 2026 DIEGO BELEÑO - SISTEMA DE INVITACIONES</div>
         </div>
-
-        <div id="pin-screen" class="hidden">
-            <div id="pin-logs" style="height: 100px; margin-bottom: 10px;"></div>
-            <div class="centered-ui">
-                <div class="pin-container">
-                    <input type="number" class="pin-input" maxlength="1" oninput="moveNext(this, 1)">
-                    <input type="number" class="pin-input" maxlength="1" oninput="moveNext(this, 2)">
-                    <input type="number" class="pin-input" maxlength="1" oninput="moveNext(this, 3)">
-                    <input type="number" class="pin-input" maxlength="1" oninput="moveNext(this, 4)">
-                    <input type="number" class="pin-input" maxlength="1" oninput="moveNext(this, 5)">
-                    <input type="number" class="pin-input" maxlength="1" oninput="validatePin()">
-                </div>
-                <div id="pin-status" class="line" style="margin-top:10px;">INSERTE CÓDIGO DE DESINFECCIÓN</div>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -174,7 +147,7 @@
         const rawNombre = (urlParams.get('nombre') || "INVITADO_ANÓNIMO");
         let audioCtx, scanOsc, scanMod, timer, count = 0;
         let teleTimer;
-        const CORRECT_PIN = "070207";
+        let currentSpeech = null;
         
         let activeSteps = [];
         const originalSteps = [
@@ -194,6 +167,7 @@
             window.speechSynthesis.speak(silent);
         }
 
+        // Función para saltar manualmente el audio y activar lo que sigue
         function skipAudio(section) {
             window.speechSynthesis.cancel();
             if(section === 'boot') {
@@ -275,7 +249,7 @@
         }
 
         window.onload = async () => {
-            const boot = ["SYSTEM_READY", "SECURE_CONNECTION_ESTABLISHED", "WAITING..."];
+            const boot = ["SYSTEM_READY", "SOUND_FIX_APPLIED", "WAITING..."];
             for(let l of boot) {
                 const d = document.createElement("div"); d.innerText = l;
                 document.getElementById("init-logs").appendChild(d);
@@ -341,7 +315,7 @@
             document.getElementById("scanner-container").style.borderColor = "var(--neon)";
             
             timer = setInterval(() => {
-                count += 0.5; 
+                count += 0.25; // VELOCIDAD LENTA
                 const cur = Math.min(Math.floor(count), 100);
                 document.getElementById("prog-bar").innerText = `PROCESANDO... [${"█".repeat(Math.floor(cur/10))}${"░".repeat(10-Math.floor(cur/10))}] ${cur}%`;
                 
@@ -407,61 +381,13 @@
             unlockAppleAudio();
             playClick();
             document.body.classList.add("glitch-active");
-            document.body.classList.add("bg-red");
             playAggressiveSound(40, 3.0, 'sawtooth', 0.6);
-            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR SU DISPOSITIVO, DEBE INGRESAR EL CÓDIGO DE SEGURIDAD PROPORCIONADO EN EL TERMINAL CENTRAL.";
+            const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR SU DISPOSITIVO, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN, ESPERE...";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
-                    showPinScreen();
-                }, 1500);
+                    window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA: " + rawNombre);
+                }, 2000);
             });
-        }
-
-        function showPinScreen() {
-            document.getElementById("result-screen").classList.add("hidden");
-            document.getElementById("pin-screen").classList.remove("hidden");
-            const msg = "BLOQUEO DE SEGURIDAD ACTIVADO. " + rawNombre + ", INGRESE EL PIN DE 6 DÍGITOS PARA DETENER EL CIFRADO.";
-            speakAndType(msg, "pin-logs", 'console');
-        }
-
-        function moveNext(el, nextIndex) {
-            if (el.value.length >= 1) {
-                document.querySelectorAll('.pin-input')[nextIndex].focus();
-            }
-        }
-
-        function validatePin() {
-            const inputs = document.querySelectorAll('.pin-input');
-            let pin = "";
-            inputs.forEach(input => pin += input.value);
-
-            if (pin.length === 6) {
-                if (pin === CORRECT_PIN) {
-                    // ÉXITO
-                    document.body.classList.remove("glitch-active", "bg-red");
-                    document.body.classList.add("bg-green");
-                    playUnlock();
-                    const msg = "CÓDIGO CORRECTO. VIRUS ELIMINADO. DISPOSITIVO SEGURO. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN...";
-                    document.getElementById("pin-status").innerText = "SISTEMA LIMPIO - ACCESO TOTAL";
-                    document.getElementById("pin-status").style.color = "var(--neon)";
-                    speakAndType(msg, "pin-logs", 'console', () => {
-                        setTimeout(() => {
-                            window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("ASISTENCIA CONFIRMADA Y DISPOSITIVO DESINFECTADO: " + rawNombre);
-                        }, 2000);
-                    });
-                } else {
-                    // ERROR
-                    playAggressiveSound(100, 0.5, 'sawtooth', 0.2);
-                    document.body.classList.add("bg-red");
-                    const msg = "PIN INCORRECTO. " + rawNombre + ", SU DISPOSITIVO SIGUE INFECTADO. REINTENTE.";
-                    document.getElementById("pin-status").innerText = "ERROR DE PIN - AMENAZA PERSISTE";
-                    document.getElementById("pin-status").style.color = "red";
-                    speakAndType(msg, "pin-logs", 'console');
-                    // Limpiar inputs
-                    inputs.forEach(input => input.value = "");
-                    inputs[0].focus();
-                }
-            }
         }
 
         async function typeSimple(t, id) {
@@ -478,3 +404,4 @@
     </script>
 </body>
 </html>
+
