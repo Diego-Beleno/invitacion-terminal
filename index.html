@@ -5,34 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TERMINAL_RESIDENCE_FINAL_BUILD</title>
     <style>
-        :root { --neon: #00ff41; --bg: #000a00; --white: #e0e0e0; --red: #ff0000; }
+        :root { --neon: #00ff41; --bg: #000a00; --white: #e0e0e0; --red: #ff0000; --dim-neon: #004400; }
+        
+        /* Efecto de líneas de TV vieja (CRT) */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 100;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
         body { 
             background: var(--bg); color: var(--neon); 
             font-family: 'Consolas', 'Courier New', monospace; 
             padding: 10px; margin: 0; height: 100vh; overflow: hidden;
             font-size: 11px; line-height: 1.1;
         }
-        #console { border: 2px solid #004400; padding: 10px; height: 94vh; display: flex; flex-direction: column; position: relative; box-shadow: inset 0 0 50px #000; overflow: hidden; transition: border-color 0.3s;}
+
+        #console { 
+            border: 2px solid var(--dim-neon); padding: 10px; height: 94vh; 
+            display: flex; flex-direction: column; position: relative; 
+            box-shadow: inset 0 0 50px #000, 0 0 15px rgba(0, 255, 65, 0.1); 
+            overflow: hidden; transition: all 0.3s;
+        }
+
         .line { margin-bottom: 2px; white-space: pre-wrap; text-transform: uppercase; }
-        .prompt-user { color: var(--white); background: rgba(0, 255, 65, 0.2); padding: 5px; font-weight: bold; border-left: 3px solid var(--white); }
-        .prompt-console { color: var(--neon); border-left: 4px solid var(--neon); padding-left: 6px; margin: 8px 0; background: rgba(0, 40, 0, 0.3);}
+        .prompt-user { color: var(--white); background: rgba(0, 255, 65, 0.15); padding: 5px; font-weight: bold; border-left: 3px solid var(--white); margin: 5px 0; }
+        .prompt-console { color: var(--neon); border-left: 4px solid var(--neon); padding-left: 6px; margin: 8px 0; background: rgba(0, 40, 0, 0.3); text-shadow: 0 0 5px var(--neon); }
         .red { color: var(--red); font-weight: bold; text-shadow: 0 0 10px var(--red); }
         .centered-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 5px 0; }
         
         .notice-box {
             border: 1px double var(--neon);
             background: rgba(0, 30, 0, 0.8);
-            padding: 10px;
-            margin: 10px 0;
-            text-align: center;
-            width: 90%;
+            padding: 10px; margin: 10px 0;
+            text-align: center; width: 90%;
+            animation: pulse 2s infinite;
         }
 
+        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+
         #scanner-container {
-            position: relative; border: 4px solid #005500; opacity: 0.1; pointer-events: none;
+            position: relative; border: 4px solid var(--dim-neon); opacity: 0.1; pointer-events: none;
             background: rgba(0, 60, 0, 0.2); width: 130px; height: 140px; display: flex; align-items: center; justify-content: center;
             margin-top: 10px; box-shadow: 0 0 20px rgba(0,255,65,0.1);
         }
+
         #scanner-dots { font-size: 22px; line-height: 0.7; letter-spacing: 6px; color: #00ff41; user-select: none; opacity: 0.5; }
         #laser { position: absolute; width: 100%; height: 4px; background: #fff; box-shadow: 0 0 25px var(--neon), 0 0 10px #fff; top: 0; left: 0; display: none; z-index: 20; }
         
@@ -40,30 +62,32 @@
             background: #002200; color: var(--neon); border: 2px solid var(--neon); 
             padding: 16px 24px; font-family: 'Consolas', monospace; cursor: pointer;
             text-transform: uppercase; font-weight: bold; font-size: 13px;
-            box-shadow: 6px 6px 0 #004400; transition: all 0.1s;
+            box-shadow: 4px 4px 0 var(--dim-neon); transition: all 0.1s;
+            position: relative; overflow: hidden;
         }
-        button:hover:not(:disabled) { background: var(--neon); color: #000; box-shadow: none; transform: translate(3px, 3px); }
+
+        button:active { transform: translate(2px, 2px); box-shadow: none; }
         button:disabled { border-color: #003300; color: #003300; opacity: 0.4; box-shadow: none; }
         
         #prog-bar { color: var(--white); font-size: 12px; margin-bottom: 5px; font-weight: bold; text-shadow: 0 0 5px var(--neon); }
         
         #telemetry-box { 
-            font-size: 9px; color: #00ff41; height: 60px; overflow: hidden; width: 100%; 
-            border-top: 1px solid #00ff41; margin-top: 5px; background: rgba(0,10,0,0.9); 
-            padding: 5px; font-family: 'Courier New';
+            font-size: 8px; color: #00ff41; height: 50px; overflow: hidden; width: 100%; 
+            border-top: 1px solid var(--dim-neon); margin-top: 5px; background: rgba(0,5,0,0.9); 
+            padding: 5px; font-family: 'Courier New'; opacity: 0.7;
         }
 
-        #countdown { font-size: 1.5em; color: #fff; border: 2px solid var(--red); padding: 15px; margin: 15px 0; background: rgba(40,0,0,0.5); text-align: center; font-weight: bold; letter-spacing: 2px; }
+        #countdown { font-size: 1.4em; color: #fff; border: 2px solid var(--red); padding: 10px; margin: 10px 0; background: rgba(40,0,0,0.5); text-align: center; font-weight: bold; letter-spacing: 1px; }
         
         .footer-info { 
-            font-size: 11px; color: var(--neon); margin-top: 10px; font-weight: bold; 
-            text-align: center; border-top: 1px dashed #004400; width: 100%; padding-top: 10px;
+            font-size: 10px; color: var(--neon); margin-top: 10px; font-weight: bold; 
+            text-align: center; border-top: 1px dashed var(--dim-neon); width: 100%; padding-top: 10px;
         }
 
         .hidden { display: none; }
         @keyframes scanMotion { 0% { top: 0%; } 100% { top: 100%; } }
-        .glitch-active { animation: glitch 0.05s infinite; background: #300 !important; }
-        @keyframes glitch { 0% { transform: translate(3px, 0); } 50% { transform: translate(-3px, 2px); } 100% { transform: translate(0, -2px); } }
+        .glitch-active { animation: glitch 0.05s infinite; background: #200 !important; }
+        @keyframes glitch { 0% { transform: translate(2px, 0); } 50% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); } 100% { transform: translate(0, -1px); } }
     </style>
 </head>
 <body>
@@ -72,7 +96,7 @@
         <div id="init-screen">
             <div id="init-logs"></div>
             <div class="centered-ui">
-                <div class="line red" style="font-size: 16px; border: 2px solid red; padding: 10px;">[!] ALERTA: PROTOCOLO AUDITIVO REQUERIDO [!]</div>
+                <div class="line red" style="font-size: 15px; border: 2px solid red; padding: 10px; text-align: center;">[!] ALERTA: PROTOCOLO AUDITIVO REQUERIDO [!]</div>
                 <div class="notice-box">
                     <span style="color:#fff;">SISTEMA DE SEGURIDAD BIOMÉTRICA</span><br>
                     POR FAVOR, ASEGÚRESE DE QUE SU VOLUMEN ESTÉ AL MÁXIMO NIVEL.
@@ -121,6 +145,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const rawNombre = (urlParams.get('nombre') || "INVITADO_ANÓNIMO");
         let audioCtx, scanOsc, scanMod, timer, count = 0;
+        let teleTimer;
         
         let activeSteps = [];
         const originalSteps = [
@@ -133,35 +158,37 @@
             {p: 98, v: "ACCESO CONCEDIDO CON ÉXITO."}
         ];
 
-        // FIJADOR PARA APPLE: Desbloquea la síntesis de voz con un sonido silencioso
         function unlockAppleAudio() {
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // "Cebar" la síntesis de voz con un mensaje vacío
             const silent = new SpeechSynthesisUtterance("");
             window.speechSynthesis.speak(silent);
+            if(navigator.vibrate) navigator.vibrate(10);
         }
 
         function playAggressiveSound(freq, duration, type='square', vol=0.1) {
             if(!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            const filter = audioCtx.createBiquadFilter();
-
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            filter.type = "lowpass"; 
-            filter.frequency.value = 2000;
-
             gain.gain.setValueAtTime(vol, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
-            osc.connect(filter);
-            filter.connect(gain);
+            osc.connect(gain);
             gain.connect(audioCtx.destination);
-
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function updateTelemetry() {
+            const box = document.getElementById("telemetry-box");
+            const data = [
+                `GPS: ${Math.random().toFixed(4)} N / ${Math.random().toFixed(4)} W`,
+                `CPU_LOAD: ${(Math.random()*100).toFixed(2)}%`,
+                `PKT_RECV: ${Math.floor(Math.random()*9999)}`,
+                `MEM_ADDR: 0x${Math.floor(Math.random()*16777215).toString(16).toUpperCase()}`,
+                `UPLINK: ACTIVE`
+            ];
+            box.innerHTML = data.join('<br>');
         }
 
         function playClick() { playAggressiveSound(1200, 0.05, 'square', 0.1); }
@@ -171,9 +198,7 @@
         }
 
         function speakAndType(text, targetId, prompt, callback) {
-            // Cancelar cualquier voz previa para evitar encolamiento en iOS
             window.speechSynthesis.cancel();
-
             const el = document.createElement("div");
             el.className = "line " + (prompt === 'user' ? 'prompt-user' : 'prompt-console');
             const target = document.getElementById(targetId);
@@ -191,20 +216,18 @@
 
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'es-MX'; 
-            utterance.rate = 1.1; // Un poco más rápido para evitar cortes en iOS
+            utterance.rate = 1.1;
             utterance.pitch = 0.5;
-
             utterance.onend = () => { 
                 clearInterval(typeInterval); 
                 el.innerHTML = (prompt === 'user' ? "> " : "") + text;
                 if(callback) callback(); 
             };
-
             window.speechSynthesis.speak(utterance);
         }
 
         window.onload = async () => {
-            const boot = ["LOADER_V2.0_POWERED_BY_BELEÑO", "ENCRYPT_STK: ENABLED", "SOUND_ENGINE: APPLE_FIX_V1", "READY FOR SCAN..."];
+            const boot = ["LOADER_V2.5_STABLE", "AUTH_KEY: VALIDATED", "ENVIRONMENT: SECURE", "BOOTING..."];
             for(let l of boot) {
                 const d = document.createElement("div"); d.innerText = l;
                 document.getElementById("init-logs").appendChild(d);
@@ -214,11 +237,9 @@
         };
 
         async function initApp() {
-            // Inicializar contexto de audio en la interacción del usuario
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             unlockAppleAudio();
             playClick();
-
             document.getElementById("init-screen").classList.add("hidden");
             document.getElementById("boot-screen").classList.remove("hidden");
             await typeSimple("TERMINAL SECURE ACCESS - PROTOCOLO V.26", "boot-header");
@@ -236,6 +257,7 @@
             activeSteps = [...originalSteps];
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
+            teleTimer = setInterval(updateTelemetry, 500);
             
             const msg = "COLOQUE SU HUELLA FIRMEMENTE SOBRE EL LECTOR. MANTENGA LA PRESIÓN HASTA QUE LA BARRA LLEGUE AL CIEN POR CIENTO. POR FAVOR NO RETIRE EL DEDO HASTA COMPLETAR EL PROCESO.";
             speakAndType(msg, "scan-logs", 'console', () => {
@@ -303,6 +325,7 @@
             if(count < 100) { 
                 clearInterval(timer); 
                 stopScanAudio();
+                if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 document.getElementById("laser").style.display = "none"; 
                 playAggressiveSound(60, 0.8, 'square', 0.3); 
                 document.getElementById("console").style.borderColor = "#ff0000";
@@ -315,6 +338,7 @@
         };
 
         function showResult() {
+            clearInterval(teleTimer);
             document.getElementById("scan-screen").classList.add("hidden");
             document.getElementById("result-screen").classList.remove("hidden");
             document.getElementById("decrypt-name").innerText = rawNombre.toUpperCase();
@@ -336,8 +360,9 @@
         function startVirusBroma() {
             unlockAppleAudio();
             playClick();
+            if(navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
             document.body.classList.add("glitch-active");
-            playAggressiveSound(30, 2.0, 'sawtooth', 0.5);
+            playAggressiveSound(40, 3.0, 'sawtooth', 0.6);
             const msg = "VIRUS INSTALADO. DISPOSITIVO COMPROMETIDO. LOS DATOS SERÁN CIFRADOS. PARA DESINFECTAR SU DISPOSITIVO, DEBE ASISTIR A LA REUNIÓN Y SEGUIR LAS INSTRUCCIONES. REDIRECCIONANDO A CENTRAL DE CONFIRMACIÓN, ESPERE";
             speakAndType(msg, "virus-logs", 'console', () => {
                 setTimeout(() => {
@@ -360,4 +385,3 @@
     </script>
 </body>
 </html>
-
