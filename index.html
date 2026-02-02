@@ -173,7 +173,7 @@
             await typeSimple("ACCESO AL SISTEMA [VERSIÓN 10.0.19045.6456]", "boot-header");
             await typeSimple("PROGRAMADO POR: DIEGO BELEÑO", "boot-header");
             
-            const msg = "SISTEMA DE SEGURIDAD INICIALIZADO CON ÉXITO. PARA CONTINUAR CON EL PROTOCOLO DE REGISTRO EN LA BASE DE DATOS, DIEGO... BUENO, NOSOTROS NECESITAMOS RECIBIR SUS DATOS BIOMÉTRICOS. POR FAVOR, ASEGÚRESE DE TENER EL VOLUMEN AL MÁXIMO Y PRESIONE EN INICIALIZAR BIOMETRIC SCAN PUNTO EXE PARA CONTINUAR.";
+            const msg = "SISTEMA DE SEGURIDAD INICIALIZADO CON ÉXITO. PARA CONTINUAR CON EL PROTOCOLO DE REGISTRO EN LA BASE DE DATOS, NECESITAMOS RECIBIR SUS DATOS BIOMÉTRICOS. POR FAVOR, ASEGÚRESE DE TENER EL VOLUMEN AL MÁXIMO Y PRESIONE EN INICIALIZAR BIOMETRIC SCAN PUNTO EXE PARA CONTINUAR.";
             speakAndType(msg, "boot-logs", 'user', () => { 
                 playAggressiveSound(900, 0.1, 'square');
                 document.getElementById("btn-start-scan").disabled = false; 
@@ -186,7 +186,7 @@
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
             
-            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE EL LECTOR DE HUELLAS. POR FAVOR NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA, OBEDEZCA LAS INSTRUCCIONES.";
+            const msg = "PROCEDIMIENTO DE CAPTURA BIOMÉTRICA. COLOQUE SU DEDO PULGAR FIRMEMENTE SOBRE EL LECTOR DE HUELLAS PARA RECOLECTAR SUS DATOS. POR FAVOR NO RETIRE LA HUELLA MIENTRAS EL SISTEMA ANALIZA SU ESTRUCTURA. OBEDEZCA LAS INSTRUCCIONES.";
             speakAndType(msg, "scan-logs", 'console', () => {
                 playAggressiveSound(1000, 0.2, 'square');
                 document.getElementById("scanner-container").style.opacity = "1";
@@ -195,11 +195,11 @@
         }
 
         const steps = [
-            {p: 5, v: "ESCANEANDO HUELLA DACTILAR..."},
+            {p: 0, v: "ESCANEANDO HUELLA DACTILAR..."},
             {p: 25, v: "EXTRAYENDO DATOS DEL SUJETO..."},
             {p: 50, v: "ASIGNANDO BLOQUE DE INFORMACIÓN..."},
             {p: 75, v: "VERIFICANDO IDENTIDAD FINAL..."},
-            {p: 90, v: "FINALIZANDO CARGA. NO RETIRE LA HUELLA."}
+            {p: 90, v: "FINALIZANDO CARGA. NO RETIRE LA HUELLA..."}
         ];
 
         function triggerScan(e) {
@@ -310,10 +310,38 @@
                 await new Promise(r => setTimeout(r, 25));
             }
         }
-
+        
         const scanEl = document.getElementById("scanner-container");
         scanEl.addEventListener('touchstart', triggerScan); 
         scanEl.addEventListener('mousedown', triggerScan); 
+        
+        const endScan = () => { 
+            if(count < 100) { 
+                clearInterval(timer); 
+                if(scanOsc) scanOsc.stop(); 
+                document.getElementById("laser").style.display = "none"; 
+                
+                // --- Lógica de Error y Reinicio ---
+                playAggressiveSound(50, 0.4, 'sawtooth', 0.2); // Sonido de error grave
+                
+                // Efecto visual de flash rojo en la consola
+                const consoleEl = document.getElementById("console");
+                consoleEl.style.borderColor = "#ff0000";
+                setTimeout(() => consoleEl.style.borderColor = "#004400", 500);
+
+                // Mensaje de advertencia
+                speakAndType("ERROR: CONTACTO INTERRUMPIDO. REINICIANDO PROTOCOLO...", "scan-logs", 'console');
+
+                // Reset total de valores
+                count = 0; 
+                document.getElementById("prog-bar").innerText = `ESPERANDO CONTACTO... [░░░░░░░░░░] 0%`;
+                document.getElementById("telemetry-box").innerHTML = ""; 
+            } 
+        };
+        
+        scanEl.addEventListener('touchend', endScan);
+        scanEl.addEventListener('mouseup', endScan);
+        // -------------------------------------------
         
         const endScan = () => { 
             if(count < 100) { 
@@ -328,3 +356,4 @@
     </script>
 </body>
 </html>
+
