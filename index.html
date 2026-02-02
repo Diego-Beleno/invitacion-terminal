@@ -94,6 +94,7 @@
 
         function playAggressiveSound(freq, duration, type='sawtooth', vol=0.08) {
             if(!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             const noise = audioCtx.createOscillator();
@@ -115,6 +116,7 @@
         }
 
         function speakAndType(text, targetId, prompt, callback) {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
             const el = document.createElement("div");
             el.className = "line " + (prompt === 'user' ? 'prompt-user' : 'prompt-console');
             document.getElementById(targetId).appendChild(el);
@@ -139,6 +141,7 @@
                 el.innerHTML = (prompt === 'user' ? "> " : "") + text;
                 if(callback) callback(); 
             };
+            window.speechSynthesis.cancel(); // LIMPIAR COLA SAFARI
             window.speechSynthesis.speak(utterance);
         }
 
@@ -160,6 +163,8 @@
 
         async function initApp() {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') await audioCtx.resume(); // SOPORTE SAFARI
+            
             playAggressiveSound(600, 0.2, 'square', 0.15);
             document.getElementById("init-screen").classList.add("hidden");
             document.getElementById("boot-screen").classList.remove("hidden");
@@ -175,6 +180,7 @@
         }
 
         async function startScanningSequence() {
+            if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume(); // SOPORTE SAFARI
             playAggressiveSound(200, 0.1, 'sawtooth');
             document.getElementById("boot-screen").classList.add("hidden");
             document.getElementById("scan-screen").classList.remove("hidden");
@@ -189,6 +195,7 @@
 
         function triggerScan(e) {
             e.preventDefault();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
             playAggressiveSound(150, 0.1, 'sawtooth');
             scanOsc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -263,9 +270,10 @@
         }
 
         function startVirusBroma() {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // SOPORTE SAFARI
             playAggressiveSound(40, 0.8, 'sawtooth', 0.3);
             document.body.classList.add("glitch-active");
-            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. TUS DATOS SON MÍOS. PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN EN MI CASA. CONFÍRMAME POR WHATSAPP AHORA.";
+            const msg = "VIRUS DESCARGADO. DISPOSITIVO COMPROMETIDO. DATOS ROBADOS, PARA BORRAR EL VIRUS DEBES SEGUIR MIS PASOS EL DÍA DE LA REUNIÓN EN MI CASA. CONFÍRMAME POR WHATSAPP AHORA.";
             speakAndType(msg, "virus-logs", 'console', () => {
                 window.location.href = "https://wa.me/584246603660?text=" + encodeURIComponent("SYSTEM_CRITICAL: " + rawNombre + " HA SIDO INFECTADO.");
             });
